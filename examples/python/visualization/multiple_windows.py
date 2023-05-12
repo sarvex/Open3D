@@ -47,13 +47,11 @@ class MultiWinApp:
         self.n_snapshots += 1
         self.snapshot_pos = (self.snapshot_pos[0] + 50,
                              self.snapshot_pos[1] + 50)
-        title = "Open3D - Multi-Window Demo (Snapshot #" + str(
-            self.n_snapshots) + ")"
+        title = f"Open3D - Multi-Window Demo (Snapshot #{self.n_snapshots})"
         new_vis = o3d.visualization.O3DVisualizer(title)
         mat = o3d.visualization.rendering.MaterialRecord()
         mat.shader = "defaultUnlit"
-        new_vis.add_geometry(CLOUD_NAME + " #" + str(self.n_snapshots),
-                             self.cloud, mat)
+        new_vis.add_geometry(f"{CLOUD_NAME} #{self.n_snapshots}", self.cloud, mat)
         new_vis.reset_camera_to_default()
         bounds = self.cloud.get_axis_aligned_bounding_box()
         extent = bounds.get_extent()

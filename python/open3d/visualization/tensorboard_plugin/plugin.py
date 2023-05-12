@@ -52,9 +52,9 @@ class Open3DPluginWindow:
         self.step_limits = [0, 0]
         self.wall_time = 0
         self.idx = 0
-        self.step_to_idx = dict()
+        self.step_to_idx = {}
         # self.all_tensor_events[self.tags[0]][prop][self.idx].step == self.step
-        self.all_tensor_events = dict()
+        self.all_tensor_events = {}
 
         self.window = None  # Access only through async_event_loop
         self.geometry_list = []
@@ -176,8 +176,11 @@ class Open3DPluginWindow:
             t for t in selected_tags
             if t in self.data_reader.run_to_tags[self.run]
         ]
-        if non_empty and len(selected_tags) == 0 and len(
-                self.data_reader.run_to_tags[self.run]) > 0:
+        if (
+            non_empty
+            and not selected_tags
+            and len(self.data_reader.run_to_tags[self.run]) > 0
+        ):
             selected_tags = self.data_reader.run_to_tags[
                 self.run][:1]  # Only first tag default
         self.tags = selected_tags
@@ -336,12 +339,12 @@ class Open3DPluginWindow:
             message = {"render_state": {}}
         status = ""
         new_geometry_list = []
-        tag_label_to_names = message.setdefault("tag_label_to_names", dict())
+        tag_label_to_names = message.setdefault("tag_label_to_names", {})
         for tag in self.tags:
             if tag not in tag_label_to_names:
                 tag_label_to_names[tag] = self.data_reader.get_label_to_names(
                     self.run, tag)
-            message_tag = dict()
+            message_tag = {}
             if tag in message["render_state"]:
                 message_tag["render_state"] = message["render_state"][tag]
             render_update = RenderUpdate(self.window.scaling, message_tag,
@@ -371,7 +374,7 @@ class Open3DPluginWindow:
                 _log.debug(f"Removing geometry {current_item}")
                 self._gui.run_sync(self.window.remove_geometry, current_item)
         # Reset view only if scene changed from empty -> not empty
-        if len(self.geometry_list) == 0 and len(new_geometry_list) > 0:
+        if len(self.geometry_list) == 0 and new_geometry_list:
             self._gui.run_sync(self.window.reset_camera_to_default)
         else:
             self._gui.run_sync(self.window.post_redraw)
@@ -398,13 +401,16 @@ class Open3DPluginWindow:
         self.window.show_skybox(False)
         self.window.line_width = int(3 * self.window.scaling)
         # Register frontend callbacks
-        class_name_base = "tensorboard/" + self.window.uid
+        class_name_base = f"tensorboard/{self.window.uid}"
         webrtc_server.register_data_channel_message_callback(
-            class_name_base + "/get_run_tags", self._get_run_tags)
+            f"{class_name_base}/get_run_tags", self._get_run_tags
+        )
         webrtc_server.register_data_channel_message_callback(
-            class_name_base + "/update_geometry", self._update_geometry)
+            f"{class_name_base}/update_geometry", self._update_geometry
+        )
         webrtc_server.register_data_channel_message_callback(
-            class_name_base + "/toggle_settings", self._toggle_settings)
+            f"{class_name_base}/toggle_settings", self._toggle_settings
+        )
         gui.Application.instance.add_window(self.window)
 
 

@@ -136,7 +136,7 @@ class FixedRadiusSearch(tf.keras.layers.Layer):
                 hash_table_size_factor=hash_table_size_factor)
         else:
             table = hash_table
-        result = ops.fixed_radius_search(
+        return ops.fixed_radius_search(
             ignore_query_point=self.ignore_query_point,
             return_distances=self.return_distances,
             metric=self.metric,
@@ -148,8 +148,8 @@ class FixedRadiusSearch(tf.keras.layers.Layer):
             hash_table_splits=table.hash_table_splits,
             hash_table_index=table.hash_table_index,
             hash_table_cell_splits=table.hash_table_cell_splits,
-            index_dtype=self.index_dtype)
-        return result
+            index_dtype=self.index_dtype,
+        )
 
 
 class RadiusSearch(tf.keras.layers.Layer):
@@ -254,17 +254,18 @@ class RadiusSearch(tf.keras.layers.Layer):
             queries_row_splits = tf.cast(tf.stack([0, tf.shape(queries)[0]]),
                                          dtype=tf.int64)
 
-        result = ops.radius_search(ignore_query_point=self.ignore_query_point,
-                                   return_distances=self.return_distances,
-                                   normalize_distances=self.normalize_distances,
-                                   metric=self.metric,
-                                   points=points,
-                                   queries=queries,
-                                   radii=radii,
-                                   points_row_splits=points_row_splits,
-                                   queries_row_splits=queries_row_splits,
-                                   index_dtype=self.index_dtype)
-        return result
+        return ops.radius_search(
+            ignore_query_point=self.ignore_query_point,
+            return_distances=self.return_distances,
+            normalize_distances=self.normalize_distances,
+            metric=self.metric,
+            points=points,
+            queries=queries,
+            radii=radii,
+            points_row_splits=points_row_splits,
+            queries_row_splits=queries_row_splits,
+            index_dtype=self.index_dtype,
+        )
 
 
 class KNNSearch(tf.keras.layers.Layer):
@@ -365,13 +366,14 @@ class KNNSearch(tf.keras.layers.Layer):
             queries_row_splits = tf.cast(tf.stack([0, tf.shape(queries)[0]]),
                                          dtype=tf.int64)
 
-        result = ops.knn_search(ignore_query_point=self.ignore_query_point,
-                                return_distances=self.return_distances,
-                                metric=self.metric,
-                                points=points,
-                                queries=queries,
-                                k=k,
-                                points_row_splits=points_row_splits,
-                                queries_row_splits=queries_row_splits,
-                                index_dtype=self.index_dtype)
-        return result
+        return ops.knn_search(
+            ignore_query_point=self.ignore_query_point,
+            return_distances=self.return_distances,
+            metric=self.metric,
+            points=points,
+            queries=queries,
+            k=k,
+            points_row_splits=points_row_splits,
+            queries_row_splits=queries_row_splits,
+            index_dtype=self.index_dtype,
+        )

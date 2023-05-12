@@ -88,15 +88,15 @@ def get_default_dataset(config):
         )
         sys.exit(1)
 
-    print('Loaded data from {}'.format(config.path_dataset))
+    print(f'Loaded data from {config.path_dataset}')
     return config
 
 
 def load_depth_file_names(config):
     if not os.path.exists(config.path_dataset):
         print(
-            'Path \'{}\' not found.'.format(config.path_dataset),
-            'Please provide --path_dataset in the command line or the config file.'
+            f"Path \'{config.path_dataset}\' not found.",
+            'Please provide --path_dataset in the command line or the config file.',
         )
         return [], []
 
@@ -106,7 +106,7 @@ def load_depth_file_names(config):
     depth_file_names = glob.glob(os.path.join(depth_folder, '*.png'))
     n_depth = len(depth_file_names)
     if n_depth == 0:
-        print('Depth image not found in {}, abort!'.format(depth_folder))
+        print(f'Depth image not found in {depth_folder}, abort!')
         return []
 
     return sorted(depth_file_names)
@@ -125,9 +125,9 @@ def load_rgbd_file_names(config):
             return depth_file_names, sorted(color_file_names)
 
     depth_folder = os.path.join(config.path_dataset, config.depth_folder)
-    print('Found {} depth images in {}, but cannot find matched number of '
-          'color images in {} with extensions {}, abort!'.format(
-              len(depth_file_names), depth_folder, color_folder, extensions))
+    print(
+        f'Found {len(depth_file_names)} depth images in {depth_folder}, but cannot find matched number of color images in {color_folder} with extensions {extensions}, abort!'
+    )
     return [], []
 
 
@@ -146,7 +146,7 @@ def load_intrinsic(config, key='depth'):
         return o3d.core.Tensor(intrinsic.intrinsic_matrix,
                                o3d.core.Dtype.Float64)
     else:
-        print('Unsupported engine {}'.format(config.engine))
+        print(f'Unsupported engine {config.engine}')
 
 
 def load_extrinsics(path_trajectory, config):
@@ -155,15 +155,10 @@ def load_extrinsics(path_trajectory, config):
     # For either a fragment or a scene
     if path_trajectory.endswith('log'):
         data = o3d.io.read_pinhole_camera_trajectory(path_trajectory)
-        for param in data.parameters:
-            extrinsics.append(param.extrinsic)
-
-    # Only for a fragment
+        extrinsics.extend(param.extrinsic for param in data.parameters)
     elif path_trajectory.endswith('json'):
         data = o3d.io.read_pose_graph(path_trajectory)
-        for node in data.nodes:
-            extrinsics.append(np.linalg.inv(node.pose))
-
+        extrinsics.extend(np.linalg.inv(node.pose) for node in data.nodes)
     if config.engine == 'legacy':
         return extrinsics
     elif config.engine == 'tensor':
@@ -171,7 +166,7 @@ def load_extrinsics(path_trajectory, config):
             map(lambda x: o3d.core.Tensor(x, o3d.core.Dtype.Float64),
                 extrinsics))
     else:
-        print('Unsupported engine {}'.format(config.engine))
+        print(f'Unsupported engine {config.engine}')
 
 
 def save_poses(

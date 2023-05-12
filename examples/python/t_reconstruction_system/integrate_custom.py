@@ -26,13 +26,13 @@ from tqdm import tqdm
 def integrate(depth_file_names, color_file_names, intrinsic, extrinsics,
               config):
     if os.path.exists(config.path_npz):
-        print('Voxel block grid npz file {} found, trying to load...'.format(
-            config.path_npz))
+        print(f'Voxel block grid npz file {config.path_npz} found, trying to load...')
         vbg = o3d.t.geometry.VoxelBlockGrid.load(config.path_npz)
         print('Loading finished.')
     else:
-        print('Voxel block grid npz file {} not found, trying to integrate...'.
-              format(config.path_npz))
+        print(
+            f'Voxel block grid npz file {config.path_npz} not found, trying to integrate...'
+        )
 
         n_files = len(depth_file_names)
         device = o3d.core.Device(config.device)
@@ -135,7 +135,7 @@ def integrate(depth_file_names, color_file_names, intrinsic, extrinsics,
             o3d.core.cuda.synchronize()
             end = time.time()
 
-        print('Saving to {}...'.format(config.path_npz))
+        print(f'Saving to {config.path_npz}...')
         vbg.save(config.path_npz)
         print('Saving finished')
 

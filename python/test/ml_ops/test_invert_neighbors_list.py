@@ -77,11 +77,7 @@ def test_invert_neighbors_list(dtype, attributes, ml):
 
     # checking the neighbors_index is more complicated because the order
     # of the neighbors for each query point is not defined.
-    expected_neighbors_index = [
-        set([0]),
-        set([0, 2]),
-        set([0, 1, 2]),
-    ]
+    expected_neighbors_index = [{0}, {0, 2}, {0, 1, 2}]
     for i, expected_neighbors_i in enumerate(expected_neighbors_index):
         start = ans.neighbors_row_splits[i]
         end = ans.neighbors_row_splits[i + 1]

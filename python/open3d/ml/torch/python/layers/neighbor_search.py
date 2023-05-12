@@ -132,7 +132,7 @@ class FixedRadiusSearch(torch.nn.Module):
         else:
             table = hash_table
 
-        result = ops.fixed_radius_search(
+        return ops.fixed_radius_search(
             ignore_query_point=self.ignore_query_point,
             return_distances=self.return_distances,
             metric=self.metric,
@@ -144,8 +144,8 @@ class FixedRadiusSearch(torch.nn.Module):
             hash_table_splits=table.hash_table_splits,
             hash_table_index=table.hash_table_index,
             hash_table_cell_splits=table.hash_table_cell_splits,
-            index_dtype=self.index_dtype)
-        return result
+            index_dtype=self.index_dtype,
+        )
 
 
 class RadiusSearch(torch.nn.Module):
@@ -245,17 +245,18 @@ class RadiusSearch(torch.nn.Module):
         if queries_row_splits is None:
             queries_row_splits = torch.LongTensor([0, queries.shape[0]])
 
-        result = ops.radius_search(ignore_query_point=self.ignore_query_point,
-                                   return_distances=self.return_distances,
-                                   normalize_distances=self.normalize_distances,
-                                   metric=self.metric,
-                                   points=points,
-                                   queries=queries,
-                                   radii=radii,
-                                   points_row_splits=points_row_splits,
-                                   queries_row_splits=queries_row_splits,
-                                   index_dtype=self.index_dtype)
-        return result
+        return ops.radius_search(
+            ignore_query_point=self.ignore_query_point,
+            return_distances=self.return_distances,
+            normalize_distances=self.normalize_distances,
+            metric=self.metric,
+            points=points,
+            queries=queries,
+            radii=radii,
+            points_row_splits=points_row_splits,
+            queries_row_splits=queries_row_splits,
+            index_dtype=self.index_dtype,
+        )
 
 
 class KNNSearch(torch.nn.Module):
@@ -352,13 +353,14 @@ class KNNSearch(torch.nn.Module):
         if queries_row_splits is None:
             queries_row_splits = torch.LongTensor([0, queries.shape[0]])
 
-        result = ops.knn_search(ignore_query_point=self.ignore_query_point,
-                                return_distances=self.return_distances,
-                                metric=self.metric,
-                                points=points,
-                                queries=queries,
-                                k=k,
-                                points_row_splits=points_row_splits,
-                                queries_row_splits=queries_row_splits,
-                                index_dtype=self.index_dtype)
-        return result
+        return ops.knn_search(
+            ignore_query_point=self.ignore_query_point,
+            return_distances=self.return_distances,
+            metric=self.metric,
+            points=points,
+            queries=queries,
+            k=k,
+            points_row_splits=points_row_splits,
+            queries_row_splits=queries_row_splits,
+            index_dtype=self.index_dtype,
+        )

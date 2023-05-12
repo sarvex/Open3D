@@ -53,8 +53,7 @@ def make_mitsuba_scene(mesh, cam_xform, fov, width, height, principle_pts,
         "themesh": mesh,
     }
 
-    scene = mi.load_dict(scene_dict)
-    return scene
+    return mi.load_dict(scene_dict)
 
 
 def run_estimation(mesh, cam_info, ref_image, env_width, iterations, tv_alpha):

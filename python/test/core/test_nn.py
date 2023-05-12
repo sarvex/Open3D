@@ -13,7 +13,7 @@ import open3d as o3d
 import open3d.core as o3c
 import pytest
 
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
+sys.path.append(f"{os.path.dirname(os.path.realpath(__file__))}/..")
 from open3d_test import list_devices
 
 np.random.seed(0)
@@ -160,35 +160,35 @@ def test_hybrid_search_random(dtype):
 
 @pytest.mark.parametrize("dtype", [o3c.float32, o3c.float64])
 def test_fixed_radius_search_random(dtype):
-    if o3c.cuda.device_count() > 0:
-        dataset_size, query_size = 1000, 100
-        radius = 0.1
+    if o3c.cuda.device_count() <= 0:
+        return
+    dataset_size, query_size = 1000, 100
+    dataset_np = np.random.rand(dataset_size, 3)
 
-        dataset_np = np.random.rand(dataset_size, 3)
+    dataset_points = o3c.Tensor(dataset_np, dtype=dtype)
+    dataset_points_cuda = dataset_points.cuda()
 
-        dataset_points = o3c.Tensor(dataset_np, dtype=dtype)
-        dataset_points_cuda = dataset_points.cuda()
+    nns = o3c.nns.NearestNeighborSearch(dataset_points)
+    nns_cuda = o3c.nns.NearestNeighborSearch(dataset_points_cuda)
 
-        nns = o3c.nns.NearestNeighborSearch(dataset_points)
-        nns_cuda = o3c.nns.NearestNeighborSearch(dataset_points_cuda)
+    radius = 0.1
+    for _ in range(10):
+        query_np = np.random.rand(query_size, 3)
+        query_points = o3c.Tensor(query_np, dtype=dtype)
+        query_points_cuda = query_points.cuda()
 
-        for _ in range(10):
-            query_np = np.random.rand(query_size, 3)
-            query_points = o3c.Tensor(query_np, dtype=dtype)
-            query_points_cuda = query_points.cuda()
+        nns.fixed_radius_index(radius)
+        indices, distances, neighbors_row_splits = nns.fixed_radius_search(
+            query_points, radius)
 
-            nns.fixed_radius_index(radius)
-            indices, distances, neighbors_row_splits = nns.fixed_radius_search(
-                query_points, radius)
+        nns_cuda.fixed_radius_index(radius)
+        indices_cuda, distances_cuda, neighbors_row_splits_cuda = nns_cuda.fixed_radius_search(
+            query_points_cuda, radius)
 
-            nns_cuda.fixed_radius_index(radius)
-            indices_cuda, distances_cuda, neighbors_row_splits_cuda = nns_cuda.fixed_radius_search(
-                query_points_cuda, radius)
-
-            np.testing.assert_equal(neighbors_row_splits.numpy(),
-                                    neighbors_row_splits_cuda.cpu().numpy())
-            np.testing.assert_allclose(distances.numpy(),
-                                       distances_cuda.cpu().numpy(),
-                                       rtol=1e-5,
-                                       atol=0)
-            np.testing.assert_equal(indices.numpy(), indices_cuda.cpu().numpy())
+        np.testing.assert_equal(neighbors_row_splits.numpy(),
+                                neighbors_row_splits_cuda.cpu().numpy())
+        np.testing.assert_allclose(distances.numpy(),
+                                   distances_cuda.cpu().numpy(),
+                                   rtol=1e-5,
+                                   atol=0)
+        np.testing.assert_equal(indices.numpy(), indices_cuda.cpu().numpy())

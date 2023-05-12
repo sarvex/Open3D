@@ -78,7 +78,7 @@ class WebVisualizer(ipywidgets.DOMWidget):
         # self.result_map = {"0": "result0",
         #                    "1": "result1", ...};
         if not hasattr(self, "result_map"):
-            self.result_map = dict()
+            self.result_map = {}
 
         jspy_message = change["new"]
         try:
@@ -92,7 +92,7 @@ class WebVisualizer(ipywidgets.DOMWidget):
                         f"Invalid jspy function arguments: {jspy_requests}")
 
                 # Check if already in result.
-                if not call_id in self.result_map:
+                if call_id not in self.result_map:
                     json_result = self._call_http_api(payload["args"][0],
                                                       payload["args"][1],
                                                       payload["args"][2])

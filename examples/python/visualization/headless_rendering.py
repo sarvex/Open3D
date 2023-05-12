@@ -26,8 +26,8 @@ def custom_draw_geometry_with_camera_trajectory(pcd, camera_trajectory_path,
     if not os.path.exists(depth_path):
         os.makedirs(depth_path)
 
-    print("Saving color images in " + image_path)
-    print("Saving depth images in " + depth_path)
+    print(f"Saving color images in {image_path}")
+    print(f"Saving depth images in {depth_path}")
 
     def move_forward(vis):
         # This function is called within the o3d.visualization.Visualizer::run() loop

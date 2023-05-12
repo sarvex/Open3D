@@ -29,7 +29,7 @@ class ReaderWithCallback:
         self.reader = o3d.io.AzureKinectMKVReader()
         self.reader.open(self.input)
         if not self.reader.is_opened():
-            raise RuntimeError("Unable to open file {}".format(args.input))
+            raise RuntimeError(f"Unable to open file {args.input}")
 
     def escape_callback(self, vis):
         self.flag_exit = True
@@ -60,15 +60,14 @@ class ReaderWithCallback:
         if self.output is not None:
             abspath = os.path.abspath(self.output)
             metadata = self.reader.get_metadata()
-            o3d.io.write_azure_kinect_mkv_metadata(
-                '{}/intrinsic.json'.format(abspath), metadata)
+            o3d.io.write_azure_kinect_mkv_metadata(f'{abspath}/intrinsic.json', metadata)
 
             config = {
                 'path_dataset': abspath,
-                'path_intrinsic': '{}/intrinsic.json'.format(abspath)
+                'path_intrinsic': f'{abspath}/intrinsic.json',
             }
             initialize_config(config)
-            with open('{}/config.json'.format(abspath), 'w') as f:
+            with open(f'{abspath}/config.json', 'w') as f:
                 json.dump(config, f, indent=4)
 
         idx = 0
@@ -85,12 +84,12 @@ class ReaderWithCallback:
                 if self.output is not None:
                     color_filename = '{0}/color/{1:05d}.jpg'.format(
                         self.output, idx)
-                    print('Writing to {}'.format(color_filename))
+                    print(f'Writing to {color_filename}')
                     o3d.io.write_image(color_filename, rgbd.color)
 
                     depth_filename = '{0}/depth/{1:05d}.png'.format(
                         self.output, idx)
-                    print('Writing to {}'.format(depth_filename))
+                    print(f'Writing to {depth_filename}')
                     o3d.io.write_image(depth_filename, rgbd.depth)
                     idx += 1
 
@@ -122,16 +121,15 @@ if __name__ == '__main__':
     if args.output is None:
         print('No output path, only play mkv')
     elif os.path.isdir(args.output):
-        print('Output path {} already existing, only play mkv'.format(
-            args.output))
+        print(f'Output path {args.output} already existing, only play mkv')
         args.output = None
     else:
         try:
             os.mkdir(args.output)
-            os.mkdir('{}/color'.format(args.output))
-            os.mkdir('{}/depth'.format(args.output))
+            os.mkdir(f'{args.output}/color')
+            os.mkdir(f'{args.output}/depth')
         except (PermissionError, FileExistsError):
-            print('Unable to mkdir {}, only play mkv'.format(args.output))
+            print(f'Unable to mkdir {args.output}, only play mkv')
             args.output = None
 
     reader = ReaderWithCallback(args.input, args.output)

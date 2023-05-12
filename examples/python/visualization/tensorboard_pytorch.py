@@ -121,7 +121,7 @@ def with_material(model_dir=MODEL_DIR):
     """
     model_name = os.path.basename(model_dir)
     logdir = os.path.join(BASE_LOGDIR, model_name)
-    model_path = os.path.join(model_dir, model_name + ".obj")
+    model_path = os.path.join(model_dir, f"{model_name}.obj")
     model = o3d.t.geometry.TriangleMesh.from_legacy(
         o3d.io.read_triangle_mesh(model_path))
     summary_3d = {
@@ -134,13 +134,12 @@ def with_material(model_dir=MODEL_DIR):
     names_to_o3dprop = {"ao": "ambient_occlusion"}
 
     for texture in ("albedo", "normal", "ao", "metallic", "roughness"):
-        texture_file = os.path.join(model_dir, texture + ".png")
+        texture_file = os.path.join(model_dir, f"{texture}.png")
         if os.path.exists(texture_file):
             texture = names_to_o3dprop.get(texture, texture)
-            summary_3d.update({
-                ("material_texture_map_" + texture):
-                    o3d.t.io.read_image(texture_file)
-            })
+            summary_3d[
+                f"material_texture_map_{texture}"
+            ] = o3d.t.io.read_image(texture_file)
             if texture == "metallic":
                 summary_3d.update(material_scalar_metallic=1.0)
 
@@ -156,19 +155,17 @@ def demo_scene():
     writer = SummaryWriter(os.path.join(BASE_LOGDIR, 'demo_scene'))
     for geom_data in geoms:
         geom = geom_data["geometry"]
-        summary_3d = {}
-        for key, tensor in geom.vertex.items():
-            summary_3d["vertex_" + key] = tensor
+        summary_3d = {f"vertex_{key}": tensor for key, tensor in geom.vertex.items()}
         for key, tensor in geom.triangle.items():
-            summary_3d["triangle_" + key] = tensor
+            summary_3d[f"triangle_{key}"] = tensor
         if geom.has_valid_material():
             summary_3d["material_name"] = geom.material.material_name
             for key, value in geom.material.scalar_properties.items():
-                summary_3d["material_scalar_" + key] = value
+                summary_3d[f"material_scalar_{key}"] = value
             for key, value in geom.material.vector_properties.items():
-                summary_3d["material_vector_" + key] = value
+                summary_3d[f"material_vector_{key}"] = value
             for key, value in geom.material.texture_maps.items():
-                summary_3d["material_texture_map_" + key] = value
+                summary_3d[f"material_texture_map_{key}"] = value
         writer.add_3d(geom_data["name"], summary_3d, step=0)
 
 
@@ -177,7 +174,7 @@ if __name__ == "__main__":
     examples = ('small_scale', 'large_scale', 'property_reference',
                 'with_material', 'demo_scene')
     selected = tuple(eg for eg in sys.argv[1:] if eg in examples)
-    if len(selected) == 0:
+    if not selected:
         print(f'Usage: python {__file__} EXAMPLE...')
         print(f'  where EXAMPLE are from {examples}')
         selected = ('property_reference', 'with_material')

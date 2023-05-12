@@ -256,18 +256,18 @@ class ReconstructionWindow:
         self.is_done = True
 
         if self.is_started:
-            print('Saving model to {}...'.format(config.path_npz))
+            print(f'Saving model to {config.path_npz}...')
             self.model.voxel_grid.save(config.path_npz)
             print('Finished.')
 
             mesh_fname = '.'.join(config.path_npz.split('.')[:-1]) + '.ply'
-            print('Extracting and saving mesh to {}...'.format(mesh_fname))
+            print(f'Extracting and saving mesh to {mesh_fname}...')
             mesh = extract_trianglemesh(self.model.voxel_grid, config,
                                         mesh_fname)
             print('Finished.')
 
             log_fname = '.'.join(config.path_npz.split('.')[:-1]) + '.log'
-            print('Saving trajectory to {}...'.format(log_fname))
+            print(f'Saving trajectory to {log_fname}...')
             save_poses(log_fname, self.poses)
             print('Finished.')
 
@@ -306,11 +306,14 @@ class ReconstructionWindow:
         self.raycast_color_image.update_image(
             (raycast_color).to(o3c.uint8, False, 255.0).to_legacy())
 
-        if self.is_scene_updated:
-            if pcd is not None and pcd.point.positions.shape[0] > 0:
-                self.widget3d.scene.scene.update_geometry(
-                    'points', pcd, rendering.Scene.UPDATE_POINTS_FLAG |
-                    rendering.Scene.UPDATE_COLORS_FLAG)
+        if (
+            self.is_scene_updated
+            and pcd is not None
+            and pcd.point.positions.shape[0] > 0
+        ):
+            self.widget3d.scene.scene.update_geometry(
+                'points', pcd, rendering.Scene.UPDATE_POINTS_FLAG |
+                rendering.Scene.UPDATE_COLORS_FLAG)
 
         self.widget3d.scene.remove_geometry("frustum")
         mat = rendering.MaterialRecord()
@@ -384,8 +387,8 @@ class ReconstructionWindow:
 
             if (self.idx % self.interval_slider.int_value == 0 and
                     self.update_box.checked) \
-                    or (self.idx == 3) \
-                    or (self.idx == n_files - 1):
+                        or (self.idx == 3) \
+                        or (self.idx == n_files - 1):
                 pcd = self.model.voxel_grid.extract_point_cloud(
                     3.0, self.est_point_count_slider.int_value).to(
                         o3d.core.Device('CPU:0'))
@@ -406,19 +409,19 @@ class ReconstructionWindow:
                 self.output_fps.text = 'FPS: {:.3f}'.format(fps_interval_len /
                                                             elapsed)
 
-            # Output info
-            info = 'Frame {}/{}\n\n'.format(self.idx, n_files)
-            info += 'Transformation:\n{}\n'.format(
-                np.array2string(T_frame_to_model.numpy(),
-                                precision=3,
-                                max_line_width=40,
-                                suppress_small=True))
-            info += 'Active voxel blocks: {}/{}\n'.format(
-                self.model.voxel_grid.hashmap().size(),
-                self.model.voxel_grid.hashmap().capacity())
-            info += 'Surface points: {}/{}\n'.format(
-                0 if pcd is None else pcd.point.positions.shape[0],
-                self.est_point_count_slider.int_value)
+            info = (
+                f'Frame {self.idx}/{n_files}\n\n'
+                + 'Transformation:\n{}\n'.format(
+                    np.array2string(
+                        T_frame_to_model.numpy(),
+                        precision=3,
+                        max_line_width=40,
+                        suppress_small=True,
+                    )
+                )
+            )
+            info += f'Active voxel blocks: {self.model.voxel_grid.hashmap().size()}/{self.model.voxel_grid.hashmap().capacity()}\n'
+            info += f'Surface points: {0 if pcd is None else pcd.point.positions.shape[0]}/{self.est_point_count_slider.int_value}\n'
 
             self.output_info.text = info
 

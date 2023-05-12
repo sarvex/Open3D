@@ -43,7 +43,7 @@ def make_clean_folder(path_folder):
     if not exists(path_folder):
         makedirs(path_folder)
     else:
-        user_input = input("%s not empty. Overwrite? (y/n) : " % path_folder)
+        user_input = input(f"{path_folder} not empty. Overwrite? (y/n) : ")
         if user_input.lower() == 'y':
             shutil.rmtree(path_folder)
             makedirs(path_folder)
@@ -102,11 +102,10 @@ if __name__ == "__main__":
         make_clean_folder(path_color)
 
     path_bag = join(args.output_folder, "realsense.bag")
-    if args.record_rosbag:
-        if exists(path_bag):
-            user_input = input("%s exists. Overwrite? (y/n) : " % path_bag)
-            if user_input.lower() == 'n':
-                exit()
+    if args.record_rosbag and exists(path_bag):
+        user_input = input(f"{path_bag} exists. Overwrite? (y/n) : ")
+        if user_input.lower() == 'n':
+            exit()
 
     # Create a pipeline
     pipeline = rs.pipeline()
@@ -120,14 +119,15 @@ if __name__ == "__main__":
     if args.record_imgs or args.record_rosbag:
         # note: using 640 x 480 depth resolution produces smooth depth boundaries
         #       using rs.format.bgr8 for color image format for OpenCV based image visualization
-        print('Using the default profiles: \n  color:{}, depth:{}'.format(
-            color_profiles[0], depth_profiles[0]))
+        print(
+            f'Using the default profiles: \n  color:{color_profiles[0]}, depth:{depth_profiles[0]}'
+        )
         w, h, fps, fmt = depth_profiles[0]
         config.enable_stream(rs.stream.depth, w, h, fmt, fps)
         w, h, fps, fmt = color_profiles[0]
         config.enable_stream(rs.stream.color, w, h, fmt, fps)
-        if args.record_rosbag:
-            config.enable_record_to_file(path_bag)
+    if args.record_rosbag:
+        config.enable_record_to_file(path_bag)
     if args.playback_rosbag:
         config.enable_device_from_file(path_bag, repeat_playback=True)
 

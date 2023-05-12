@@ -201,11 +201,7 @@ def time_animation():
         pts = pts * (1.0 + amount * expand) + [amount * v for v in drift_dir]
         cloud.points = o3d.utility.Vector3dVector(pts)
         cloud.colors = orig.colors
-        clouds.append({
-            "name": "points at t=" + str(i),
-            "geometry": cloud,
-            "time": i
-        })
+        clouds.append({"name": f"points at t={str(i)}", "geometry": cloud, "time": i})
 
     vis.draw(clouds)
 
@@ -244,12 +240,14 @@ def groups():
                 mat = midrise_mat
             else:
                 mat = building_mat
-            buildings.append({
-                "name": "building_" + str(x) + "_" + str(z),
-                "geometry": box,
-                "material": mat,
-                "group": "buildings"
-            })
+            buildings.append(
+                {
+                    "name": f"building_{str(x)}_{str(z)}",
+                    "geometry": box,
+                    "material": mat,
+                    "group": "buildings",
+                }
+            )
 
     haze = make_point_cloud(5000, (half, 0.333 * max_height, half),
                             1.414 * half, False)

@@ -14,7 +14,7 @@ import pickle
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
+sys.path.append(f"{os.path.dirname(os.path.realpath(__file__))}/..")
 from open3d_test import list_devices
 
 
@@ -105,7 +105,7 @@ def test_creation_special_shapes(shape, dtype, device):
 def test_dtype():
     dtype = o3c.int32
     assert dtype.byte_size() == 4
-    assert "{}".format(dtype) == "Int32"
+    assert f"{dtype}" == "Int32"
 
 
 def test_device():
@@ -696,8 +696,8 @@ def test_getitem(device):
                        match=r"Cannot slice a scalar \(0-dim\) tensor."):
         o3c.Tensor.ones((), device=device)[:]
     with pytest.raises(RuntimeError,
-                       match=r"Cannot slice a scalar \(0-dim\) tensor."):
-        o3c.Tensor.ones((), device=device)[0:1]
+                           match=r"Cannot slice a scalar \(0-dim\) tensor."):
+        o3c.Tensor.ones((), device=device)[:1]
 
 
 @pytest.mark.parametrize("device", list_devices())
@@ -813,8 +813,8 @@ def test_setitem(device):
                        match=r"Cannot slice a scalar \(0-dim\) tensor."):
         o3c.Tensor.ones((), device=device)[:] = 0
     with pytest.raises(RuntimeError,
-                       match=r"Cannot slice a scalar \(0-dim\) tensor."):
-        o3c.Tensor.ones((), device=device)[0:1] = 0
+                           match=r"Cannot slice a scalar \(0-dim\) tensor."):
+        o3c.Tensor.ones((), device=device)[:1] = 0
 
 
 @pytest.mark.parametrize(
@@ -1002,7 +1002,7 @@ def test_unary_elementwise(np_func_name, o3_func_name, device):
 
     # Test in-place version
     if o3_func_name not in ["floor", "ceil", "round", "trunc"]:
-        o3_func_name_inplace = o3_func_name + "_"
+        o3_func_name_inplace = f"{o3_func_name}_"
         getattr(o3_t, o3_func_name_inplace)()
         np.testing.assert_allclose(o3_t.cpu().numpy(),
                                    getattr(np, np_func_name)(np_t),
@@ -1540,9 +1540,7 @@ def test_iterator(device):
     # 0-d.
     o3_t = o3c.Tensor.ones((), dtype=o3c.float32, device=device)
     with pytest.raises(Exception, match=r'Cannot iterate a scalar'):
-        for o3_t_slice in o3_t:
-            pass
-
+        pass
     # 1-d.
     o3_t = o3c.Tensor([0, 1, 2], device=device)
     np_t = np.array([0, 1, 2])
@@ -1583,7 +1581,7 @@ def test_pickle(device):
         np.testing.assert_equal(o3_t.cpu().numpy(), o3_t_load.cpu().numpy())
 
         # Test with a non-contiguous tensor.
-        o3_t_nc = o3_t[0:100:2]
+        o3_t_nc = o3_t[:100:2]
         pickle.dump(o3_t_nc, open(file_name, "wb"))
         o3_t_nc_load = pickle.load(open(file_name, "rb"))
         assert o3_t_nc_load.is_contiguous()

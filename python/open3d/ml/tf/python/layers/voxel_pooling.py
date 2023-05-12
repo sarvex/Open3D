@@ -92,9 +92,10 @@ class VoxelPooling(tf.keras.layers.Layer):
           pooled_features:
             The output point features with shape [M,channels] and M <= N.
         """
-        result = ops.voxel_pooling(positions,
-                                   features,
-                                   voxel_size,
-                                   position_fn=self.position_fn,
-                                   feature_fn=self.feature_fn)
-        return result
+        return ops.voxel_pooling(
+            positions,
+            features,
+            voxel_size,
+            position_fn=self.position_fn,
+            feature_fn=self.feature_fn,
+        )

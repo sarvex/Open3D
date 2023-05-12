@@ -18,7 +18,7 @@ def main():
         sys.exit()
 
     model_dir = sys.argv[1]
-    model_name = os.path.join(model_dir, os.path.basename(model_dir) + ".obj")
+    model_name = os.path.join(model_dir, f"{os.path.basename(model_dir)}.obj")
     model = o3d.io.read_triangle_mesh(model_name)
     material = o3d.visualization.rendering.MaterialRecord()
     material.shader = "defaultLit"

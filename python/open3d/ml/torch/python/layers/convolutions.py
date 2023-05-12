@@ -162,13 +162,15 @@ class ContinuousConv(torch.nn.Module):
         self.fixed_radius_search = FixedRadiusSearch(
             metric=self.radius_search_metric,
             ignore_query_point=self.radius_search_ignore_query_points,
-            return_distances=not self.window_function is None)
+            return_distances=self.window_function is not None,
+        )
 
         self.radius_search = RadiusSearch(
             metric=self.radius_search_metric,
             ignore_query_point=self.radius_search_ignore_query_points,
-            return_distances=not self.window_function is None,
-            normalize_distances=not self.window_function is None)
+            return_distances=self.window_function is not None,
+            normalize_distances=self.window_function is not None,
+        )
 
         self.use_dense_layer_for_center = use_dense_layer_for_center
         if self.use_dense_layer_for_center:
@@ -250,9 +252,10 @@ class ContinuousConv(torch.nn.Module):
                                          dtype=torch.float32,
                                          device=self.kernel.device)
 
-        return_distances = not self.window_function is None
-
-        if not user_neighbors_index is None and not user_neighbors_row_splits is None:
+        if (
+            user_neighbors_index is not None
+            and user_neighbors_row_splits is not None
+        ):
 
             if user_neighbors_importance is None:
                 neighbors_importance = torch.empty((0,),
@@ -272,11 +275,13 @@ class ContinuousConv(torch.nn.Module):
                     queries=out_positions,
                     radius=radius,
                     hash_table=fixed_radius_search_hash_table)
+                return_distances = self.window_function is not None
+
                 if return_distances:
                     if self.radius_search_metric == 'L2':
                         neighbors_distance_normalized = self.nns.neighbors_distance / (
                             radius * radius)
-                    else:  # L1
+                    else:
                         neighbors_distance_normalized = self.nns.neighbors_distance / radius
 
             elif len(extents.shape) == 1:
@@ -332,7 +337,7 @@ class ContinuousConv(torch.nn.Module):
 
         if self.use_bias:
             out_features += self.bias
-        if not self.activation is None:
+        if self.activation is not None:
             out_features = self.activation(out_features)
 
         return out_features
@@ -460,12 +465,13 @@ class SparseConv(torch.nn.Module):
         Returns: A tensor of shape [num output points, filters] with the output
           features.
         """
-        if isinstance(inp_features, classes.RaggedTensor):
-            if not (isinstance(inp_positions, classes.RaggedTensor) and
-                    isinstance(out_positions, classes.RaggedTensor)):
-                raise Exception(
-                    "All of inp_positions, inp_features and out_positions must be torch.Tensor, or ml3d.classes.RaggedTensor"
-                )
+        if isinstance(inp_features, classes.RaggedTensor) and not (
+            isinstance(inp_positions, classes.RaggedTensor)
+            and isinstance(out_positions, classes.RaggedTensor)
+        ):
+            raise Exception(
+                "All of inp_positions, inp_features and out_positions must be torch.Tensor, or ml3d.classes.RaggedTensor"
+            )
 
         offset = self.offset
         if isinstance(voxel_size, (float, int)):
@@ -655,12 +661,13 @@ class SparseConvTranspose(torch.nn.Module):
         Returns: A tensor of shape [num output points, filters] with the output
           features.
         """
-        if isinstance(inp_features, classes.RaggedTensor):
-            if not (isinstance(inp_positions, classes.RaggedTensor) and
-                    isinstance(out_positions, classes.RaggedTensor)):
-                raise Exception(
-                    "All of inp_positions, inp_features and out_positions must be torch.Tensor, or ml3d.classes.RaggedTensor"
-                )
+        if isinstance(inp_features, classes.RaggedTensor) and not (
+            isinstance(inp_positions, classes.RaggedTensor)
+            and isinstance(out_positions, classes.RaggedTensor)
+        ):
+            raise Exception(
+                "All of inp_positions, inp_features and out_positions must be torch.Tensor, or ml3d.classes.RaggedTensor"
+            )
 
         offset = self.offset
         if isinstance(voxel_size, (float, int)):

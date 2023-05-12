@@ -29,15 +29,16 @@ def test_reduce_subarrays_sum_random(seed, dtype, ml):
     values = rng.uniform(0, 10, size=values_shape).astype(dtype)
 
     row_splits = [0]
-    for _ in range(rng.randint(1, 10)):
-        row_splits.append(
-            rng.randint(0, values_shape[0] - row_splits[-1]) + row_splits[-1])
+    row_splits.extend(
+        rng.randint(0, values_shape[0] - row_splits[-1]) + row_splits[-1]
+        for _ in range(rng.randint(1, 10))
+    )
     row_splits.extend(values_shape)
 
-    expected_result = []
-    for start, stop in zip(row_splits, row_splits[1:]):
-        # np.sum correctly handles zero length arrays and returns 0
-        expected_result.append(np.sum(values[start:stop]))
+    expected_result = [
+        np.sum(values[start:stop])
+        for start, stop in zip(row_splits, row_splits[1:])
+    ]
     np.array(expected_result, dtype=dtype)
 
     row_splits = np.array(row_splits, dtype=np.int64)
@@ -64,9 +65,10 @@ def test_reduce_subarrays_sum_zero_length_values(ml):
     values = np.array([], dtype=np.float32)
 
     row_splits = [0]
-    for _ in range(rng.randint(1, 10)):
-        row_splits.append(
-            rng.randint(0, shape[0] - row_splits[-1]) + row_splits[-1])
+    row_splits.extend(
+        rng.randint(0, shape[0] - row_splits[-1]) + row_splits[-1]
+        for _ in range(rng.randint(1, 10))
+    )
     row_splits.extend(shape)
     row_splits = np.array(row_splits, dtype=np.int64)
 

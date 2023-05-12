@@ -53,7 +53,7 @@ def multiscale_icp(source,
     for i, scale in enumerate(range(len(max_iter))):  # multi-scale approach
         iter = max_iter[scale]
         distance_threshold = config["voxel_size"] * 1.4
-        print("voxel_size {}".format(voxel_size[scale]))
+        print(f"voxel_size {voxel_size[scale]}")
         source_down = source.voxel_down_sample(voxel_size[scale])
         target_down = target.voxel_down_sample(voxel_size[scale])
         if config["icp_method"] == "point_to_point":
@@ -129,9 +129,9 @@ def local_refinement(source, target, transformation_init, config):
 
 def register_point_cloud_pair(ply_file_names, s, t, transformation_init,
                               config):
-    print("reading %s ..." % ply_file_names[s])
+    print(f"reading {ply_file_names[s]} ...")
     source = o3d.io.read_point_cloud(ply_file_names[s])
-    print("reading %s ..." % ply_file_names[t])
+    print(f"reading {ply_file_names[t]} ...")
     target = o3d.io.read_point_cloud(ply_file_names[t])
     (transformation, information) = \
             local_refinement(source, target, transformation_init, config)

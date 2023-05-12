@@ -50,7 +50,7 @@ def check_properties(name, mesh):
     if self_intersecting:
         intersecting_triangles = np.asarray(
             mesh.get_self_intersecting_triangles())
-        intersecting_triangles = intersecting_triangles[0:1]
+        intersecting_triangles = intersecting_triangles[:1]
         intersecting_triangles = np.unique(intersecting_triangles)
         print("  # visualize self-intersecting triangles")
         triangles = np.asarray(mesh.triangles)[intersecting_triangles]

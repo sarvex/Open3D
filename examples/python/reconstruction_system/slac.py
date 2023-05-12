@@ -30,8 +30,8 @@ def run(config):
 
     if (len(ply_file_names) == 0):
         raise RuntimeError(
-            "No fragment found in {}, please make sure the reconstruction_system has finished running on the dataset."
-            .format(join(config["path_dataset"], config["folder_fragment"])))
+            f'No fragment found in {join(config["path_dataset"], config["folder_fragment"])}, please make sure the reconstruction_system has finished running on the dataset.'
+        )
 
     pose_graph_fragment = o3d.io.read_pose_graph(
         join(path_dataset, config["template_refined_posegraph_optimized"]))
@@ -74,8 +74,8 @@ def run(config):
 
     else:
         raise RuntimeError(
-            "Requested optimization method {}, is not implemented. Implemented methods includes slac and rigid."
-            .format(config["method"]))
+            f'Requested optimization method {config["method"]}, is not implemented. Implemented methods includes slac and rigid.'
+        )
 
     # Write updated pose graph.
     o3d.io.write_pose_graph(
@@ -98,5 +98,12 @@ def run(config):
     trajectory.parameters = params
 
     o3d.io.write_pinhole_camera_trajectory(
-        slac_params.get_subfolder_name() + "/optimized_trajectory_" +
-        str(config["method"]) + ".log", trajectory)
+        (
+            (
+                f"{slac_params.get_subfolder_name()}/optimized_trajectory_"
+                + str(config["method"])
+            )
+            + ".log"
+        ),
+        trajectory,
+    )

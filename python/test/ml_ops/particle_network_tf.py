@@ -111,7 +111,7 @@ class MyParticleNetwork(tf.keras.Model):
         filter_extent = tf.constant(self.filter_extent)
 
         fluid_feats = [tf.ones_like(pos[:, 0:1]), vel]
-        if not other_feats is None:
+        if other_feats is not None:
             fluid_feats.append(other_feats)
         fluid_feats = tf.concat(fluid_feats, axis=-1)
 

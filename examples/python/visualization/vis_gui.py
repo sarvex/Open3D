@@ -176,7 +176,7 @@ class Settings:
         assert (self.material.shader == Settings.LIT)
         prefab = Settings.PREFAB[name]
         for key, val in prefab.items():
-            setattr(self.material, "base_" + key, val)
+            setattr(self.material, f"base_{key}", val)
 
     def apply_lighting_profile(self, name):
         profile = Settings.LIGHTING_PROFILES[name]
@@ -201,7 +201,7 @@ class AppWindow:
     def __init__(self, width, height):
         self.settings = Settings()
         resource_path = gui.Application.instance.resource_path
-        self.settings.new_ibl_name = resource_path + "/" + AppWindow.DEFAULT_IBL
+        self.settings.new_ibl_name = f"{resource_path}/{AppWindow.DEFAULT_IBL}"
 
         self.window = gui.Application.instance.create_window(
             "Open3D", width, height)
@@ -240,8 +240,8 @@ class AppWindow:
                                          gui.Margins(em, 0, 0, 0))
 
         self._arcball_button = gui.Button("Arcball")
-        self._arcball_button.horizontal_padding_em = 0.5
         self._arcball_button.vertical_padding_em = 0
+        self._arcball_button.horizontal_padding_em = 0.5
         self._arcball_button.set_on_clicked(self._set_mouse_mode_rotate)
         self._fly_button = gui.Button("Fly")
         self._fly_button.horizontal_padding_em = 0.5
@@ -323,8 +323,7 @@ class AppWindow:
         advanced.add_child(h)
 
         self._ibl_map = gui.Combobox()
-        for ibl in glob.glob(gui.Application.instance.resource_path +
-                             "/*_ibl.ktx"):
+        for ibl in glob.glob(f"{gui.Application.instance.resource_path}/*_ibl.ktx"):
 
             self._ibl_map.add_item(os.path.basename(ibl[:-8]))
         self._ibl_map.selected_text = AppWindow.DEFAULT_IBL
@@ -565,7 +564,7 @@ class AppWindow:
             self._apply_settings()
 
     def _on_new_ibl(self, name, index):
-        self.settings.new_ibl_name = gui.Application.instance.resource_path + "/" + name
+        self.settings.new_ibl_name = f"{gui.Application.instance.resource_path}/{name}"
         self._profiles.selected_text = Settings.CUSTOM_PROFILE_NAME
         self._apply_settings()
 
@@ -764,8 +763,7 @@ def main():
         if os.path.exists(path):
             w.load(path)
         else:
-            w.window.show_message_box("Error",
-                                      "Could not open file '" + path + "'")
+            w.window.show_message_box("Error", f"Could not open file '{path}'")
 
     # Run the event loop. This will not return until the last window is closed.
     gui.Application.instance.run()

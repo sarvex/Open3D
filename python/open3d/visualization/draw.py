@@ -54,7 +54,7 @@ def draw(geometry=None,
         if isinstance(g, dict):
             w.add_geometry(g)
         else:
-            w.add_geometry("Object " + str(n), g)
+            w.add_geometry(f"Object {str(n)}", g)
 
     n = 1
     if isinstance(geometry, list):

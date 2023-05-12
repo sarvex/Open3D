@@ -30,7 +30,7 @@ def high_level():
     vis.show_settings = True
     vis.add_geometry("Points", points)
     for idx in range(0, len(points.points)):
-        vis.add_3d_label(points.points[idx], "{}".format(idx))
+        vis.add_3d_label(points.points[idx], f"{idx}")
     vis.reset_camera_to_default()
 
     app.add_window(vis)
@@ -51,7 +51,7 @@ def low_level():
     mat.point_size = 5 * w.scaling
     widget3d.scene.add_geometry("Points", points, mat)
     for idx in range(0, len(points.points)):
-        l = widget3d.add_3d_label(points.points[idx], "{}".format(idx))
+        l = widget3d.add_3d_label(points.points[idx], f"{idx}")
         l.color = gui.Color(points.colors[idx][0], points.colors[idx][1],
                             points.colors[idx][2])
         l.scale = np.random.uniform(0.5, 3.0)

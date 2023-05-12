@@ -24,10 +24,7 @@ def draw_box_offscreen():
     _ = render.render_to_image()
 
 
-@pytest.mark.skipif(
-    not (platform.system() == "Linux" and platform.machine() == "x86_64") or
-    os.getenv("OPEN3D_CPU_RENDERING", '') != 'true',
-    reason="Offscreen CPU rendering is only supported on x86_64 Linux")
+@pytest.mark.skipif(platform.system() != "Linux" or platform.machine() != "x86_64" or os.getenv("OPEN3D_CPU_RENDERING", '') != 'true', reason="Offscreen CPU rendering is only supported on x86_64 Linux")
 def test_draw_cpu():
     """Test CPU rendering in a separate process."""
     proc = Process(target=draw_box_offscreen)
@@ -35,5 +32,5 @@ def test_draw_cpu():
     proc.join(timeout=5)  # Wait for process to complete
     if proc.exitcode is None:
         proc.kill()  # Kill on failure
-        assert False, __name__ + " did not complete."
+        assert False, f"{__name__} did not complete."
     assert proc.exitcode == 0

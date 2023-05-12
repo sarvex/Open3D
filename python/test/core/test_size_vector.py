@@ -11,32 +11,32 @@ import pytest
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
+sys.path.append(f"{os.path.dirname(os.path.realpath(__file__))}/..")
 from open3d_test import list_devices
 
 
 def test_size_vector():
     # List
     sv = o3d.core.SizeVector([-1, 2, 3])
-    assert "{}".format(sv) == "SizeVector[-1, 2, 3]"
+    assert f"{sv}" == "SizeVector[-1, 2, 3]"
 
     # Tuple
     sv = o3d.core.SizeVector((-1, 2, 3))
-    assert "{}".format(sv) == "SizeVector[-1, 2, 3]"
+    assert f"{sv}" == "SizeVector[-1, 2, 3]"
 
     # Numpy 1D array
     sv = o3d.core.SizeVector(np.array([-1, 2, 3]))
-    assert "{}".format(sv) == "SizeVector[-1, 2, 3]"
+    assert f"{sv}" == "SizeVector[-1, 2, 3]"
 
     # Empty
     sv = o3d.core.SizeVector()
-    assert "{}".format(sv) == "SizeVector[]"
+    assert f"{sv}" == "SizeVector[]"
     sv = o3d.core.SizeVector([])
-    assert "{}".format(sv) == "SizeVector[]"
+    assert f"{sv}" == "SizeVector[]"
     sv = o3d.core.SizeVector(())
-    assert "{}".format(sv) == "SizeVector[]"
+    assert f"{sv}" == "SizeVector[]"
     sv = o3d.core.SizeVector(np.array([]))
-    assert "{}".format(sv) == "SizeVector[]"
+    assert f"{sv}" == "SizeVector[]"
 
     # 1-dimensional SizeVector
     assert o3d.core.SizeVector(3) == (3,)

@@ -26,9 +26,7 @@ def problem0():
         20, 66, 68, 67, 7, 69, 71, 70, 22, 72, 74, 73, 3, 15, 44, 43, 45, 5, 41,
         40, 42, 13, 39, 37, 38, 2, 56, 55, 19, 61, 60, 59, 8, 76, 75, 77, 23
     ]
-    static_positions = []
-    for id in static_ids:
-        static_positions.append(vertices[id])
+    static_positions = [vertices[id] for id in static_ids]
     handle_ids = [4]
     handle_positions = [vertices[4] + np.array((0, 0, 0.4))]
 
@@ -42,9 +40,7 @@ def problem1():
     static_ids = [
         1, 46, 15, 43, 5, 40, 13, 38, 2, 56, 37, 39, 42, 41, 45, 44, 48, 47
     ]
-    static_positions = []
-    for id in static_ids:
-        static_positions.append(vertices[id])
+    static_positions = [vertices[id] for id in static_ids]
     handle_ids = [21]
     handle_positions = [vertices[21] + np.array((0, 0, 0.4))]
 
@@ -55,10 +51,8 @@ def problem2():
     armadillo_data = o3d.data.ArmadilloMesh()
     mesh = o3d.io.read_triangle_mesh(armadillo_data.path)
     vertices = np.asarray(mesh.vertices)
-    static_ids = [idx for idx in np.where(vertices[:, 1] < -30)[0]]
-    static_positions = []
-    for id in static_ids:
-        static_positions.append(vertices[id])
+    static_ids = list(np.where(vertices[:, 1] < -30)[0])
+    static_positions = [vertices[id] for id in static_ids]
     handle_ids = [2490]
     handle_positions = [vertices[2490] + np.array((-40, -40, -40))]
 
@@ -76,7 +70,7 @@ if __name__ == "__main__":
         tic = time.time()
         mesh_prime = mesh.deform_as_rigid_as_possible(
             o3d.utility.IntVector(constraint_ids), constraint_pos, max_iter=50)
-        print("deform took {}[s]".format(time.time() - tic))
+        print(f"deform took {time.time() - tic}[s]")
         mesh_prime.compute_vertex_normals()
 
         mesh.paint_uniform_color((1, 0, 0))

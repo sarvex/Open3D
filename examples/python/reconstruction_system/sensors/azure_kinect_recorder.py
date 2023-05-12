@@ -115,7 +115,7 @@ if __name__ == '__main__':
     else:
         filename = '{date:%Y-%m-%d-%H-%M-%S}.mkv'.format(
             date=datetime.datetime.now())
-    print('Prepare writing to {}'.format(filename))
+    print(f'Prepare writing to {filename}')
 
     device = args.device
     if device < 0 or device > 255:

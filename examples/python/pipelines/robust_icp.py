@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     threshold = 1.0
     print("Using the noisy source pointcloud to perform robust ICP.\n")
-    print("Robust point-to-plane ICP, threshold={}:".format(threshold))
+    print(f"Robust point-to-plane ICP, threshold={threshold}:")
     loss = o3d.pipelines.registration.TukeyLoss(k=sigma)
     print("Using robust loss:", loss)
     p2l = o3d.pipelines.registration.TransformationEstimationPointToPlane(loss)

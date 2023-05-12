@@ -83,11 +83,7 @@ def test_knn_search(dtype, ml, num_points_queries, metric, ignore_query_point,
         end = ans.neighbors_row_splits[i + 1]
         q_neighbors_index = ans.neighbors_index[start:end]
 
-        if k == 1:
-            gt_set = set([gt_neighbors_index[i]])
-        else:
-            gt_set = set(gt_neighbors_index[i])
-
+        gt_set = {gt_neighbors_index[i]} if k == 1 else set(gt_neighbors_index[i])
         if ignore_query_point:
             gt_set.remove(i)
         assert gt_set == set(q_neighbors_index)
@@ -221,11 +217,7 @@ def test_knn_search_batches(ml, batch_size):
         end = ans.neighbors_row_splits[i + 1]
         q_neighbors_index = ans.neighbors_index[start:end]
 
-        if k == 1:
-            gt_set = set([gt_neighbors_index[i]])
-        else:
-            gt_set = set(gt_neighbors_index[i])
-
+        gt_set = {gt_neighbors_index[i]} if k == 1 else set(gt_neighbors_index[i])
         if ignore_query_point:
             gt_set.remove(i)
         assert gt_set == set(q_neighbors_index)

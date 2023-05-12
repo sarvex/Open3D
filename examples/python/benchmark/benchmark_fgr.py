@@ -22,11 +22,17 @@ def execute_fast_global_registration(source_down, target_down, source_fpfh,
     distance_threshold = voxel_size * 0.5
     print(":: Apply fast global registration with distance threshold %.3f" \
             % distance_threshold)
-    result = o3d.pipelines.registration.registration_fgr_based_on_feature_matching(
-        source_down, target_down, source_fpfh, target_fpfh,
-        o3d.pipelines.registration.FastGlobalRegistrationOption(
-            maximum_correspondence_distance=distance_threshold))
-    return result
+    return (
+        o3d.pipelines.registration.registration_fgr_based_on_feature_matching(
+            source_down,
+            target_down,
+            source_fpfh,
+            target_fpfh,
+            o3d.pipelines.registration.FastGlobalRegistrationOption(
+                maximum_correspondence_distance=distance_threshold
+            ),
+        )
+    )
 
 
 def preprocess_point_cloud(pcd, voxel_size):
@@ -66,11 +72,7 @@ if __name__ == "__main__":
             result = execute_fast_global_registration(source_down, target_down,
                                                       source_fpfh, target_fpfh,
                                                       voxel_size)
-            if (result.transformation.trace() == 4.0):
-                success = False
-            else:
-                success = True
-
+            success = result.transformation.trace() != 4.0
             # Note: we save inverse of result_ransac.transformation
             # to comply with http://redwood-data.org/indoor/fileformat.html
             alignment.append(

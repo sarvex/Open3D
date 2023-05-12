@@ -6,6 +6,7 @@
 # ----------------------------------------------------------------------------
 """Internal information about the Open3D plugin."""
 
+
 from tensorboard.compat.proto.summary_pb2 import SummaryMetadata
 from .plugin_data_pb2 import LabelToNames
 
@@ -69,13 +70,21 @@ MATERIAL_TEXTURE_MAPS = (
 )
 
 SUPPORTED_PROPERTIES = set(
-    tuple(GEOMETRY_PROPERTY_DIMS.keys()) + ("material_name",) +
-    tuple("material_scalar_" + p for p in MATERIAL_SCALAR_PROPERTIES) +
-    tuple("material_vector_" + p for p in MATERIAL_VECTOR_PROPERTIES) +
-    tuple("material_texture_map_" + p for p in
-          (MATERIAL_SCALAR_PROPERTIES[2:] +  # skip point_size, line_width
-           MATERIAL_VECTOR_PROPERTIES[1:] +  # skip base_color
-           MATERIAL_TEXTURE_MAPS)))
+    (
+        tuple(GEOMETRY_PROPERTY_DIMS.keys())
+        + ("material_name",)
+        + tuple(f"material_scalar_{p}" for p in MATERIAL_SCALAR_PROPERTIES)
+    )
+    + tuple(f"material_vector_{p}" for p in MATERIAL_VECTOR_PROPERTIES)
+    + tuple(
+        f"material_texture_map_{p}"
+        for p in (
+            MATERIAL_SCALAR_PROPERTIES[2:]
+            + MATERIAL_VECTOR_PROPERTIES[1:]  # skip point_size, line_width
+            + MATERIAL_TEXTURE_MAPS  # skip base_color
+        )
+    )
+)
 
 
 def create_summary_metadata(description, metadata):

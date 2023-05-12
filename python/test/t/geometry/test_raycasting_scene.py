@@ -150,7 +150,7 @@ def test_compute_closest_points():
     ans = scene.compute_closest_points(query_points)
 
     assert (geom_id == ans['geometry_ids']).all()
-    assert (0 == ans['primitive_ids']).all()
+    assert (ans['primitive_ids'] == 0).all()
     np.testing.assert_allclose(ans['points'].numpy(),
                                np.array([[0.2, 0.1, 0.0], [1, 1, 0]]),
                                rtol=1e-6,
@@ -254,18 +254,16 @@ def test_output_shapes(shape):
     ans = scene.cast_rays(rays)
     for k, v in ans.items():
         expected_shape = shape + last_dim[k]
-        assert list(
-            v.shape
-        ) == expected_shape, 'shape mismatch: expected {} but got {} for {}'.format(
-            expected_shape, list(v.shape), k)
+        assert (
+            list(v.shape) == expected_shape
+        ), f'shape mismatch: expected {expected_shape} but got {list(v.shape)} for {k}'
 
     ans = scene.compute_closest_points(query_points)
     for k, v in ans.items():
         expected_shape = shape + last_dim[k]
-        assert list(
-            v.shape
-        ) == expected_shape, 'shape mismatch: expected {} but got {} for {}'.format(
-            expected_shape, list(v.shape), k)
+        assert (
+            list(v.shape) == expected_shape
+        ), f'shape mismatch: expected {expected_shape} but got {list(v.shape)} for {k}'
 
 
 def test_sphere_wrong_occupancy():

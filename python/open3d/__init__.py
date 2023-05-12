@@ -38,8 +38,11 @@ def load_cdll(path):
         return CDLL(str(path))
 
 
-if _build_config["BUILD_GUI"] and not (find_library("c++abi") or
-                                       find_library("c++")):
+if (
+    _build_config["BUILD_GUI"]
+    and not find_library("c++abi")
+    and not find_library("c++")
+):
     try:  # Preload libc++.so and libc++abi.so (required by filament)
         load_cdll(str(next((Path(__file__).parent).glob("*c++abi.*"))))
         load_cdll(str(next((Path(__file__).parent).glob("*c++.*"))))
@@ -100,10 +103,10 @@ def _insert_pybind_names(skip_names=()):
     python subpackages, since they have a different import mechanism."""
     submodules = {}
     for modname in sys.modules:
-        if "open3d." + __DEVICE_API__ + ".pybind" in modname:
-            if any("." + skip_name in modname for skip_name in skip_names):
+        if f"open3d.{__DEVICE_API__}.pybind" in modname:
+            if any(f".{skip_name}" in modname for skip_name in skip_names):
                 continue
-            subname = modname.replace(__DEVICE_API__ + ".pybind.", "")
+            subname = modname.replace(f"{__DEVICE_API__}.pybind.", "")
             if subname not in sys.modules:
                 submodules[subname] = sys.modules[modname]
     sys.modules.update(submodules)
@@ -140,7 +143,7 @@ if _build_config["BUILD_JUPYTER_EXTENSION"]:
 # OPEN3D_ML_ROOT points to the root of the Open3D-ML repo.
 # If set this will override the integrated Open3D-ML.
 if "OPEN3D_ML_ROOT" in os.environ:
-    print("Using external Open3D-ML in {}".format(os.environ["OPEN3D_ML_ROOT"]))
+    print(f'Using external Open3D-ML in {os.environ["OPEN3D_ML_ROOT"]}')
     sys.path.append(os.environ["OPEN3D_ML_ROOT"])
 import open3d.ml
 

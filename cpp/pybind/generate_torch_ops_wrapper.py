@@ -80,18 +80,18 @@ def parse_schema_from_docstring(docstring):
     open3d::my_function(int a, Tensor b, str c='bla') -> Tensor d
     """
     m = re.search('with schema: open3d::(.*)$', docstring)
-    fn_signature = m.group(1)
+    fn_signature = m[1]
     m = re.match('^(.*)\((.*)\) -> (.*)', fn_signature)
-    fn_name, arguments, returns = m.group(1), m.group(2), m.group(3)
+    fn_name, arguments, returns = m[1], m[2], m[3]
     arguments = [tuple(x.strip().split(' ')) for x in arguments.split(',')]
     arguments = [Argument(x[0], *x[1].split('=')) for x in arguments]
     # torch encodes str default values as octals
     # -> convert a string that contains octals to a proper python str
     for a in arguments:
-        if not a.default_value is None and a.typename == 'str':
-            a.default_value = bytes([
+        if a.default_value is not None and a.typename == 'str':
+            a.default_value = bytes(
                 int(x, 8) for x in a.default_value[1:-1].split('\\')[1:]
-            ]).decode('utf-8')
+            ).decode('utf-8')
 
     if returns.strip().startswith('('):
         # remove tuple parenthesis
@@ -111,7 +111,7 @@ def get_tensorflow_docstring_from_file(path):
     m = re.search('R"doc\((.*?)\)doc"',
                   tf_reg_op_file,
                   flags=re.MULTILINE | re.DOTALL)
-    return m.group(1).strip()
+    return m[1].strip()
 
 
 def find_op_reg_file(ops_dir, op_name):
@@ -120,10 +120,7 @@ def find_op_reg_file(ops_dir, op_name):
     print(lowercase_filename)
     all_op_files = glob(os.path.join(ops_dir, '**', '*Ops.cpp'), recursive=True)
     op_file_dict = {os.path.basename(x).lower(): x for x in all_op_files}
-    if lowercase_filename in op_file_dict:
-        return op_file_dict[lowercase_filename]
-    else:
-        return None
+    return op_file_dict.get(lowercase_filename, None)
 
 
 def main():
@@ -164,18 +161,18 @@ def main():
         docstring = get_tensorflow_docstring_from_file(
             find_op_reg_file(args.tensorflow_ops_dir, schema.name[8:]))
         if docstring:
-            docstring = '"""' + docstring + '\n"""'
+            docstring = f'"""{docstring}' + '\n"""'
             docstring = textwrap.indent(docstring, INDENT_SPACES)
 
         fn_args = []
         args_fwd = []
         for arg in schema.arguments:
             tmp = arg.name
-            if not arg.default_value is None:
+            if arg.default_value is not None:
                 if isinstance(arg.default_value, str):
-                    tmp += '="{}"'.format(str(arg.default_value))
+                    tmp += f'="{str(arg.default_value)}"'
                 else:
-                    tmp += '={}'.format(str(arg.default_value))
+                    tmp += f'={str(arg.default_value)}'
 
             fn_args.append(tmp)
             args_fwd.append('{arg}={arg}'.format(arg=arg.name))

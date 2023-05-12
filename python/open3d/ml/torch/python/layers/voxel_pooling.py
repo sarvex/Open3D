@@ -92,9 +92,10 @@ class VoxelPooling(torch.nn.Module):
         """
         if isinstance(voxel_size, (float, int)):
             voxel_size = torch.tensor(voxel_size, dtype=positions.dtype)
-        result = ops.voxel_pooling(positions,
-                                   features,
-                                   voxel_size,
-                                   position_fn=self.position_fn,
-                                   feature_fn=self.feature_fn)
-        return result
+        return ops.voxel_pooling(
+            positions,
+            features,
+            voxel_size,
+            position_fn=self.position_fn,
+            feature_fn=self.feature_fn,
+        )

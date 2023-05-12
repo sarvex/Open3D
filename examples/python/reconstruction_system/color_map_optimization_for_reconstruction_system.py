@@ -19,18 +19,17 @@ from open3d_example import *
 def parse_keys(filename):
     with open(filename, 'r') as f:
         content = f.readlines()
-    if content is None:
-        print('Unable to open {}'.format(filename))
-        return []
-    else:
+    if content is not None:
         return sorted(list(map(int, ''.join(content).split())))
+    print(f'Unable to open {filename}')
+    return []
 
 
 def collect_keyframe_rgbd(color_files, depth_files, keys):
     if len(keys) == 0:
         raise RuntimeError("No key frames selected")
     if keys[-1] >= len(color_files):
-        raise ValueError("keys[-1]: {} index out of range".format(keys[-1]))
+        raise ValueError(f"keys[-1]: {keys[-1]} index out of range")
 
     selected_color_files = []
     selected_depth_files = []
@@ -46,7 +45,7 @@ def collect_keyframe_pose(traj, intrinsic, keys):
     if len(keys) == 0:
         raise RuntimeError("No key frames selected")
     if keys[-1] >= len(traj.parameters):
-        raise ValueError("keys[-1]: {} index out of range".format(keys[-1]))
+        raise ValueError(f"keys[-1]: {keys[-1]} index out of range")
 
     selectd_params = []
     for key in keys:
@@ -64,15 +63,15 @@ def main(config, keys):
     color_files, depth_files = get_rgbd_file_lists(path)
     if len(color_files) != len(depth_files):
         raise ValueError(
-            "The number of color images {} must equal to the number of depth images {}."
-            .format(len(color_files), len(depth_files)))
+            f"The number of color images {len(color_files)} must equal to the number of depth images {len(depth_files)}."
+        )
 
     camera = o3d.io.read_pinhole_camera_trajectory(
         os.path.join(path, config["template_global_traj"]))
     if len(color_files) != len(camera.parameters):
         raise ValueError(
-            "The number of color images {} must equal to the number of camera parameters {}."
-            .format(len(color_files), len(depth_files)))
+            f"The number of color images {len(color_files)} must equal to the number of camera parameters {len(depth_files)}."
+        )
 
     color_files, depth_files = collect_keyframe_rgbd(color_files, depth_files,
                                                      keys)
@@ -155,13 +154,11 @@ if __name__ == "__main__":
             initialize_config(config)
     assert config is not None
 
-    keys = None
-    if args.keys is not None:
-        keys = parse_keys(args.keys)
+    keys = parse_keys(args.keys) if args.keys is not None else None
     if keys is None:
         traj = o3d.io.read_pinhole_camera_trajectory(
             os.path.join(config["path_dataset"],
                          config["template_global_traj"]))
-        keys = [i for i in range(0, len(traj.parameters), args.sample_rate)]
+        keys = list(range(0, len(traj.parameters), args.sample_rate))
 
     main(config, keys)

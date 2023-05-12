@@ -15,7 +15,7 @@ import open3d as o3d
 import open3d.core as o3c
 import pytest
 
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
+sys.path.append(f"{os.path.dirname(os.path.realpath(__file__))}/..")
 sys.path.append(
     os.path.dirname(os.path.realpath(__file__)) +
     "/../../../examples/python/utility")
@@ -47,30 +47,25 @@ class NNSOps:
     @staticmethod
     def knn_search(index, queries, nns_opt):
         knn = nns_opt["knn"]
-        result = index.knn_search(queries, knn)
-        return result
+        return index.knn_search(queries, knn)
 
     @staticmethod
     def radius_search(index, queries, nns_opt):
         radius = nns_opt["radius"]
-        result = index.fixed_radius_search(queries, radius)
-        return result
+        return index.fixed_radius_search(queries, radius)
 
     @staticmethod
     def hybrid_search(index, queries, nns_opt):
         radius, knn = nns_opt["radius"], nns_opt["knn"]
-        result = index.hybrid_search(queries, radius, knn)
-        return result
+        return index.hybrid_search(queries, radius, knn)
 
 
 def list_sizes():
-    num_points = (10000,)
-    return num_points
+    return (10000,)
 
 
 def list_dimensions():
-    dimensions = (3, 8, 16, 32)
-    return dimensions
+    return 3, 8, 16, 32
 
 
 @pytest.mark.parametrize("size", list_sizes())

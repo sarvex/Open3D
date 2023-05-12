@@ -67,7 +67,7 @@ def main():
             continue
 
         docstring = getattr(oplib, fn_name).__doc__
-        docstring = '"""' + docstring + '\n"""'
+        docstring = f'"""{docstring}' + '\n"""'
         docstring = textwrap.indent(docstring, INDENT_SPACES)
 
         signature = inspect.signature(value)
@@ -78,11 +78,11 @@ def main():
             tmp = param.name
             if param.default != inspect.Parameter.empty:
                 if isinstance(param.default, str):
-                    tmp += '="{}"'.format(str(param.default))
+                    tmp += f'="{str(param.default)}"'
                 elif isinstance(param.default, type(tf.float32)):
-                    tmp += '=_tf.{}'.format(param.default.name)
+                    tmp += f'=_tf.{param.default.name}'
                 else:
-                    tmp += '={}'.format(str(param.default))
+                    tmp += f'={str(param.default)}'
 
             fn_args.append(tmp)
             args_fwd.append('{arg}={arg}'.format(arg=param.name))
@@ -90,10 +90,11 @@ def main():
         args_fwd = ', '.join(args_fwd)
         generated_function_strs += FN_TEMPLATE_STR.format(
             fn_name_short=fn_name[7:],
-            fn_name='_lib.' + fn_name,
+            fn_name=f'_lib.{fn_name}',
             fn_args=fn_args,
             docstring=docstring,
-            args_fwd=args_fwd)
+            args_fwd=args_fwd,
+        )
 
     with open(args.input, 'r') as f:
         input_header = f.read()

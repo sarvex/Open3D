@@ -37,8 +37,9 @@ def test_simple_dataset_base():
         gt_prefix)
 
     data_descriptor = o3d.data.DataDescriptor(
-        url=o3d.data.open3d_downloads_prefix + "20220201-data/BunnyMesh.ply",
-        md5="568f871d1a221ba6627569f1e6f9a3f2")
+        url=f"{o3d.data.open3d_downloads_prefix}20220201-data/BunnyMesh.ply",
+        md5="568f871d1a221ba6627569f1e6f9a3f2",
+    )
     single_download_dataset = o3d.data.DownloadDataset(
         prefix=gt_prefix,
         data_descriptor=data_descriptor,

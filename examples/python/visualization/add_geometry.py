@@ -70,9 +70,7 @@ class SpheresApp:
                 # it. This is the application menu, and it is where the
                 # About..., Preferences..., and Quit menu items typically go.
                 menu.add_menu("Example", app_menu)
-                menu.add_menu("Debug", debug_menu)
-            else:
-                menu.add_menu("Debug", debug_menu)
+            menu.add_menu("Debug", debug_menu)
             gui.Application.instance.menubar = menu
 
         # The menubar is global, but we need to connect the menu items to the
@@ -100,7 +98,7 @@ class SpheresApp:
             10.0 * random.uniform(-1.0, 1.0), 10.0 * random.uniform(-1.0, 1.0),
             10.0 * random.uniform(-1.0, 1.0)
         ])
-        self.scene.scene.add_geometry("sphere" + str(self._id), sphere, mat)
+        self.scene.scene.add_geometry(f"sphere{self._id}", sphere, mat)
 
     def _on_menu_sphere(self):
         # GUI callbacks happen on the main thread, so we can do everything

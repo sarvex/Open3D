@@ -13,6 +13,9 @@ import os
 
 def test_apply_depth_noise_model():
 
+
+
+
     class Simulator:
         """Original implementation of the simulator:
         http://redwood-data.org/indoor/data/simdepth.py
@@ -43,16 +46,13 @@ def test_apply_depth_noise_model():
             f = (1 - a) * self.model[y, x, min(max(i1, 0), 4)] + a * self.model[
                 y, x, min(i2, 4)]
 
-            if f == 0:
-                return 0
-            else:
-                return z / f
+            return 0 if f == 0 else z / f
 
         def simulate(self,
-                     inputpng,
-                     outputpng,
-                     depth_scale=1000.0,
-                     deterministic=False):
+                             inputpng,
+                             outputpng,
+                             depth_scale=1000.0,
+                             deterministic=False):
 
             a = o3d.t.io.read_image(inputpng).as_tensor()
             a = a.numpy().squeeze().astype(np.float32) / depth_scale
@@ -85,18 +85,18 @@ def test_apply_depth_noise_model():
                 # quantization and high freq noise
                 if d == 0:
                     it[0] = 0
+                elif deterministic:
+                    it[0] = 35.130 * 8 / round((35.130 / d + 0) * 8)
                 else:
-                    if deterministic:
-                        it[0] = 35.130 * 8 / round((35.130 / d + 0) * 8)
-                    else:
-                        it[0] = 35.130 * 8 / round(
-                            (35.130 / d + np.random.normal(0, 0.027778)) * 8)
+                    it[0] = 35.130 * 8 / round(
+                        (35.130 / d + np.random.normal(0, 0.027778)) * 8)
 
                 it.iternext()
 
             a = (a * depth_scale).astype(np.uint16)
             a = np.expand_dims(a, axis=2)
             o3d.t.io.write_image(outputpng, o3d.t.geometry.Image(a))
+
 
     # Load dataset.
     data = o3d.data.RedwoodIndoorLivingRoom1()

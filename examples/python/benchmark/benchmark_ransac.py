@@ -32,16 +32,25 @@ def preprocess_point_cloud(pcd, voxel_size):
 def execute_global_registration(source, target, source_fpfh, target_fpfh,
                                 voxel_size):
     distance_threshold = voxel_size * 1.4
-    result = o3d.pipelines.registration.registration_ransac_based_on_feature_matching(
-        source, target, source_fpfh, target_fpfh, True, distance_threshold,
+    return o3d.pipelines.registration.registration_ransac_based_on_feature_matching(
+        source,
+        target,
+        source_fpfh,
+        target_fpfh,
+        True,
+        distance_threshold,
         o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
-        3, [
+        3,
+        [
             o3d.pipelines.registration.CorrespondenceCheckerBasedOnEdgeLength(
-                0.9),
+                0.9
+            ),
             o3d.pipelines.registration.CorrespondenceCheckerBasedOnDistance(
-                distance_threshold)
-        ], o3d.pipelines.registration.RANSACConvergenceCriteria(100000, 0.999))
-    return result
+                distance_threshold
+            ),
+        ],
+        o3d.pipelines.registration.RANSACConvergenceCriteria(100000, 0.999),
+    )
 
 
 if __name__ == "__main__":
@@ -64,11 +73,7 @@ if __name__ == "__main__":
             result = execute_global_registration(source_down, target_down,
                                                  source_fpfh, target_fpfh,
                                                  voxel_size)
-            if (result.transformation.trace() == 4.0):
-                success = False
-            else:
-                success = True
-
+            success = result.transformation.trace() != 4.0
             # Note: we save inverse of result.transformation
             # to comply with http://redwood-data.org/indoor/fileformat.html
             if not success:

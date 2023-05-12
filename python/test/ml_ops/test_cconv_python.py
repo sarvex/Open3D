@@ -23,7 +23,6 @@ pytestmark = mltest.default_marks
                              ([3,3,3],            1,           1,               False,              False),
                              ([5,5,5],            5,           3,               False,               True),
                         ])
-# yapf: enable
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_compare_to_conv3d(dtype, filter_size, out_channels, in_channels,
                            with_inp_importance, with_normalization):
@@ -63,8 +62,9 @@ def test_compare_to_conv3d(dtype, filter_size, out_channels, in_channels,
     extent = voxel_size[np.newaxis, :] * np.array(filter_size[::-1])
     offset = np.array([0.0, 0.0, 0.0], dtype=dtype)
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
     fixed_radius_search = ml3d.layers.FixedRadiusSearch(metric='Linf')
     neighbors_index, neighbors_row_splits, _ = fixed_radius_search(
         inp_positions / extent,
@@ -118,7 +118,6 @@ def test_compare_to_conv3d(dtype, filter_size, out_channels, in_channels,
                              ([5,5,5],            5,           3,               False,                      True,                  False,              True, False, BALL_TO_CUBE_VOLUME_PRESERVING, LINEAR_BORDER),
                              ([5,1,3],            3,           4,               False,                      True,                  False,              False,         False,           IDENTITY,        LINEAR),
                         ])
-# yapf: enable
 def test_cconv_gradient(filter_size, out_channels, in_channels,
                         with_inp_importance, with_neighbors_importance,
                         with_individual_extent, with_normalization,
@@ -152,8 +151,9 @@ def test_cconv_gradient(filter_size, out_channels, in_channels,
         extent = np.array([[0.4]], dtype=dtype)
     offset = np.array([0.0, 0.0, 0.0], dtype=dtype)
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
     fixed_radius_search = ml3d.layers.FixedRadiusSearch(metric='Linf')
     neighbors_index, neighbors_row_splits, _ = fixed_radius_search(
         inp_positions, out_positions, extent[0, 0] / 2)

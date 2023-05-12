@@ -34,7 +34,7 @@ if "@BUILD_JUPYTER_EXTENSION@" == "ON":
         import ipywidgets  # noqa # pylint: disable=unused-import
         import jupyterlab  # noqa # pylint: disable=unused-import
     except ImportError as error:
-        print(error.__class__.__name__ + ": " + error.message)
+        print(f"{error.__class__.__name__}: {error.message}")
         print("Run `pip install jupyter_packaging ipywidgets jupyterlab`.")
 
     here = os.path.dirname(os.path.abspath(__file__))
@@ -102,12 +102,10 @@ entry_points = {
     "console_scripts": ["open3d = @PYPI_PACKAGE_NAME@.tools.cli:main",]
 }
 if sys.platform != "darwin":  # Remove check when off main thread GUI works
-    entry_points.update({
-        "tensorboard_plugins": [
-            "Open3D = @PYPI_PACKAGE_NAME@.visualization.tensorboard_plugin"
-            ".plugin:Open3DPlugin",
-        ]
-    })
+    entry_points["tensorboard_plugins"] = [
+        "Open3D = @PYPI_PACKAGE_NAME@.visualization.tensorboard_plugin"
+        ".plugin:Open3DPlugin",
+    ]
 classifiers = [
     # https://pypi.org/pypi?%3Aaction=list_classifiers
     "Development Status :: 3 - Alpha",

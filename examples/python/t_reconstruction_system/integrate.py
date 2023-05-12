@@ -65,7 +65,7 @@ def integrate(depth_file_names, color_file_names, depth_intrinsic,
             vbg.integrate(frustum_block_coords, depth, depth_intrinsic,
                           extrinsic, config.depth_scale, config.depth_max)
         dt = time.time() - start
-    print('Finished integrating {} frames in {} seconds'.format(n_files, dt))
+    print(f'Finished integrating {n_files} frames in {dt} seconds')
 
     return vbg
 

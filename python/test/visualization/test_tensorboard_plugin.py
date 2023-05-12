@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 try:
     import tensorflow as tf  # noqa
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     pytest.importorskip("torch")
 pytest.importorskip("tensorboard")
 vis = pytest.importorskip("open3d.ml.vis")
@@ -90,7 +90,7 @@ def geometry_data():
             nbb = step * 2 + batch_idx + 1
             center = np.linspace(-nbb, nbb, num=3 * nbb).reshape((nbb, 3))
             size = np.linspace(nbb, 4 * nbb, num=3 * nbb).reshape((nbb, 3))
-            label_class = list(labels[k] for k in range(nbb))
+            label_class = [labels[k] for k in range(nbb)]
             confidence = np.linspace(0., 1., num=nbb)
             bboxes[-1].append(
                 tuple(
@@ -101,7 +101,7 @@ def geometry_data():
     tags = ['cube', 'cube_pcd', 'cube_ls']
     filenames = [['events.out.tfevents.*'], [], ['cube.*.msgpack'],
                  ['cube_ls.*.msgpack'], ['cube_pcd.*.msgpack']]
-    if len(bboxes) > 0:
+    if bboxes:
         tags.append('bboxes')
         filenames.append(['bboxes.*.msgpack'])
     return {

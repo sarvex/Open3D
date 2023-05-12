@@ -49,8 +49,7 @@ def render_mesh(mesh, mesh_center):
         'themesh': mesh,
     })
 
-    img = mi.render(scene, spp=256)
-    return img
+    return mi.render(scene, spp=256)
 
 
 # Default to LLVM variant which should be available on all

@@ -104,13 +104,13 @@ def test_registration_result_constructor(device):
 def test_evaluate_registration(device):
 
     supported_dtypes = [o3c.float32, o3c.float64]
+    max_correspondence_distance = 3.0
     for dtype in supported_dtypes:
         source_t, target_t = get_pcds(dtype, device)
 
         source_legacy = source_t.to_legacy()
         target_legacy = target_t.to_legacy()
 
-        max_correspondence_distance = 3.0
         init_trans_legacy = np.eye(4)
         init_trans_t = o3c.Tensor.eye(4, o3c.float64, device)
 
@@ -130,13 +130,13 @@ def test_evaluate_registration(device):
 def test_icp_point_to_point(device):
 
     supported_dtypes = [o3c.float32, o3c.float64]
+    max_correspondence_distance = 3.0
+
     for dtype in supported_dtypes:
         source_t, target_t = get_pcds(dtype, device)
 
         source_legacy = source_t.to_legacy()
         target_legacy = target_t.to_legacy()
-
-        max_correspondence_distance = 3.0
 
         init_trans_legacy = np.array([[0.862, 0.011, -0.507, 0.5],
                                       [-0.139, 0.967, -0.215, 0.7],
@@ -168,13 +168,13 @@ def test_icp_point_to_point(device):
 def test_icp_point_to_plane(device):
 
     supported_dtypes = [o3c.float32, o3c.float64]
+    max_correspondence_distance = 3.0
+
     for dtype in supported_dtypes:
         source_t, target_t = get_pcds(dtype, device)
 
         source_legacy = source_t.to_legacy()
         target_legacy = target_t.to_legacy()
-
-        max_correspondence_distance = 3.0
 
         init_trans_legacy = np.array([[0.862, 0.011, -0.507, 0.5],
                                       [-0.139, 0.967, -0.215, 0.7],
@@ -206,13 +206,13 @@ def test_icp_point_to_plane(device):
 def test_get_information_matrix(device):
 
     supported_dtypes = [o3c.float32, o3c.float64]
+    max_correspondence_distance = 3.0
+
     for dtype in supported_dtypes:
         source_t, target_t = get_pcds(dtype, device)
 
         source_legacy = source_t.to_legacy()
         target_legacy = target_t.to_legacy()
-
-        max_correspondence_distance = 3.0
 
         transformation_legacy = np.array([[0.862, 0.011, -0.507, 0.5],
                                           [-0.139, 0.967, -0.215, 0.7],

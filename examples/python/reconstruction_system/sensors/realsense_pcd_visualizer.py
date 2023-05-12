@@ -33,10 +33,9 @@ class Preset(IntEnum):
 
 def get_intrinsic_matrix(frame):
     intrinsics = frame.profile.as_video_stream_profile().intrinsics
-    out = o3d.camera.PinholeCameraIntrinsic(640, 480, intrinsics.fx,
-                                            intrinsics.fy, intrinsics.ppx,
-                                            intrinsics.ppy)
-    return out
+    return o3d.camera.PinholeCameraIntrinsic(
+        640, 480, intrinsics.fx, intrinsics.fy, intrinsics.ppx, intrinsics.ppy
+    )
 
 
 if __name__ == "__main__":
@@ -49,8 +48,9 @@ if __name__ == "__main__":
     config = rs.config()
 
     color_profiles, depth_profiles = get_profiles()
-    print('Using the default profiles: \n  color:{}, depth:{}'.format(
-        color_profiles[0], depth_profiles[0]))
+    print(
+        f'Using the default profiles: \n  color:{color_profiles[0]}, depth:{depth_profiles[0]}'
+    )
     w, h, fps, fmt = depth_profiles[0]
     config.enable_stream(rs.stream.depth, w, h, fmt, fps)
     w, h, fps, fmt = color_profiles[0]

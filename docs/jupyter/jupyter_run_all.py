@@ -36,10 +36,10 @@ if __name__ == "__main__":
 
     print("Found the following notebooks:")
     for nb_path in nb_paths:
-        print("> {}".format(nb_path))
+        print(f"> {nb_path}")
 
     for nb_path in nb_paths:
-        print("[Executing notebook {}]".format(nb_path.name))
+        print(f"[Executing notebook {nb_path.name}]")
 
         with open(nb_path) as f:
             nb = nbformat.read(f, as_version=4)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         try:
             ep.preprocess(nb, {"metadata": {"path": nb_path.parent}})
         except nbconvert.preprocessors.execute.CellExecutionError as e:
-            print("Execution of {} failed".format(nb_path.name))
+            print(f"Execution of {nb_path.name} failed")
             if args.break_on_failure:
                 raise
 

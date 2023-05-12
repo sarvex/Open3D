@@ -25,7 +25,6 @@ pytestmark = mltest.default_marks
                              ([4,4,4],            3,           4,                True,               True),
                              ([5,5,5],            5,           3,               False,               True),
                         ])
-# yapf: enable
 @mltest.parametrize.ml
 @pytest.mark.parametrize('dtype', [np.float32])
 def test_compare_to_conv3d(ml, dtype, kernel_size, out_channels, in_channels,
@@ -62,8 +61,9 @@ def test_compare_to_conv3d(ml, dtype, kernel_size, out_channels, in_channels,
 
     voxel_size = 0.2
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
 
     if ml.module.__name__ == 'tensorflow':
         kernel_initializer = tf.constant_initializer(filters)
@@ -137,7 +137,6 @@ def test_compare_to_conv3d(ml, dtype, kernel_size, out_channels, in_channels,
                              ([4,4,4],            3,           4,                True,               True,          8),
                              ([5,5,5],            5,           3,               False,               True,          8),
                         ])
-# yapf: enable
 @mltest.parametrize.ml
 @pytest.mark.parametrize('dtype', [np.float32])
 def test_compare_to_conv3d_batches(ml, dtype, kernel_size, out_channels,
@@ -190,8 +189,9 @@ def test_compare_to_conv3d_batches(ml, dtype, kernel_size, out_channels,
 
     voxel_size = 0.2
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
 
     kernel_initializer = tf.constant_initializer(filters)
     bias_initializer = tf.constant_initializer(bias)
@@ -269,7 +269,6 @@ def test_compare_to_conv3d_batches(ml, dtype, kernel_size, out_channels,
                              ([4,4,4],            3,           4,                True,               True),
                              ([5,5,5],            5,           3,               False,               True),
                         ])
-# yapf: enable
 @mltest.parametrize.ml
 @pytest.mark.parametrize('dtype', [np.float32])
 def test_compare_to_conv3dtranspose(ml, dtype, kernel_size, out_channels,
@@ -307,8 +306,9 @@ def test_compare_to_conv3dtranspose(ml, dtype, kernel_size, out_channels,
 
     voxel_size = 0.2
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
 
     if ml.module.__name__ == 'tensorflow':
         kernel_initializer = tf.constant_initializer(filters)
@@ -387,7 +387,6 @@ def test_compare_to_conv3dtranspose(ml, dtype, kernel_size, out_channels,
                              ([4,4,4],            3,           4,                True,               True,          8),
                              ([5,5,5],            5,           3,               False,               True,          8),
                         ])
-# yapf: enable
 @mltest.parametrize.ml
 @pytest.mark.parametrize('dtype', [np.float32])
 def test_compare_to_conv3dtranspose_batches(ml, dtype, kernel_size,
@@ -442,8 +441,9 @@ def test_compare_to_conv3dtranspose_batches(ml, dtype, kernel_size,
 
     voxel_size = 0.2
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
 
     kernel_initializer = tf.constant_initializer(filters)
     bias_initializer = tf.constant_initializer(bias)
@@ -482,12 +482,14 @@ def test_compare_to_conv3dtranspose_batches(ml, dtype, kernel_size,
 
         if with_normalization:
             for i, v in enumerate(inp_feat):
-                num_neighbors = mltest.to_numpy(
+                if num_neighbors := mltest.to_numpy(
                     sparse_conv_transpose.nns_inp.neighbors_row_splits[
-                        inp_positions_row_splits[idx] + i + 1] -
-                    sparse_conv_transpose.nns_inp.neighbors_row_splits[
-                        inp_positions_row_splits[idx] + i])
-                if num_neighbors:
+                        inp_positions_row_splits[idx] + i + 1
+                    ]
+                    - sparse_conv_transpose.nns_inp.neighbors_row_splits[
+                        inp_positions_row_splits[idx] + i
+                    ]
+                ):
                     v /= dtype(num_neighbors)
 
         inp_volume[0, inp_pos_int[:, 2], inp_pos_int[:, 1],

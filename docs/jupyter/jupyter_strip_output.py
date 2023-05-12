@@ -29,7 +29,7 @@ if __name__ == "__main__":
         nb_paths += sorted((file_dir / example_dir).glob("*.ipynb"))
 
     for nb_path in nb_paths:
-        print("Clean {}".format(nb_path.name))
+        print(f"Clean {nb_path.name}")
 
         with open(nb_path) as f:
             nb = nbformat.read(f, as_version=4)
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         try:
             ep.preprocess(nb, {"metadata": {"path": nb_path.parent}})
         except nbconvert.preprocessors.execute.CellExecutionError:
-            print("Cleaning of {} failed".format(nb_path.name))
+            print(f"Cleaning of {nb_path.name} failed")
 
         with open(nb_path, "w", encoding="utf-8") as f:
             nbformat.write(nb, f)

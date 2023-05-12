@@ -127,7 +127,7 @@ class RaggedTensor:
 
     def to_list(self):
         """Returns a list of tensors"""
-        return [tensor for tensor in self.r_tensor]
+        return list(self.r_tensor)
 
     def __getitem__(self, idx):
         return self.r_tensor[idx]

@@ -174,9 +174,9 @@ def _classify_properties(tensormap):
         if (tensor.shape == (exp_size, 1) and
                 tensor.dtype not in (o3d.core.float32, o3d.core.float64,
                                      o3d.core.undefined)):
-            label_prop.update({name: 1})
+            label_prop[name] = 1
         else:
-            custom_prop.update({name: tensor.shape[1]})
+            custom_prop[name] = tensor.shape[1]
     return label_prop, custom_prop
 
 
@@ -199,9 +199,9 @@ class Open3DPluginDataReader:
         self._run_to_tags = {}
         self._event_lock = threading.Lock()  # Protect TB event file data
         # Geometry data reading
-        self._tensor_events = dict()
+        self._tensor_events = {}
         self.geometry_cache = LRUCache(max_items=cache_max_items)
-        self.runtag_prop_shape = dict()
+        self.runtag_prop_shape = {}
         self._file_handles = {}  # {filename, (open_handle, read_lock)}
         self._file_handles_lock = threading.Lock()
         self.reload_events()
@@ -236,7 +236,7 @@ class Open3DPluginDataReader:
                     for run, tagdict in sorted(run_tags.items())
                 }
             _log.debug(f"Event data reloaded: {self._run_to_tags}")
-        self._tensor_events = dict()  # Invalidate index
+        self._tensor_events = {}
         # Close all open files
         with self._file_handles_lock:
             while len(self._file_handles) > 0:
@@ -292,18 +292,15 @@ class Open3DPluginDataReader:
         file_handle[0].seek(read_location)
         buf = file_handle[0].read(read_size)
         file_handle[1].release()
-        if masked_crc32c(buf) == read_masked_crc32c:
-            return buf
-        else:
-            return None
+        return buf if masked_crc32c(buf) == read_masked_crc32c else None
 
     def update_runtag_prop_shape(self, run, tag, geometry,
                                  inference_data_proto):
         """Update list of custom properties and their shapes for different runs
         and tags.
         """
-        tag_prop_shape = self.runtag_prop_shape.setdefault(run, dict())
-        prop_shape = tag_prop_shape.setdefault(tag, dict())
+        tag_prop_shape = self.runtag_prop_shape.setdefault(run, {})
+        prop_shape = tag_prop_shape.setdefault(tag, {})
         if len(prop_shape) == 0 and not geometry.is_empty():
             for prop_type in ('point', 'vertex'):  # exclude 'line'
                 if hasattr(geometry, prop_type):
@@ -571,19 +568,18 @@ class RenderUpdate:
                         and a new empty tensor should be created.
             """
             if prop in tm:
-                if "__" + prop in tm:  # swap
-                    tm[prop], tm["__" + prop] = tm["__" + prop], tm[prop]
+                if f"__{prop}" in tm:  # swap
+                    tm[prop], tm[f"__{prop}"] = tm[f"__{prop}"], tm[prop]
                 elif clone:
-                    tm["__" + prop] = tm[prop].clone()  # backup
+                    tm[f"__{prop}"] = tm[prop].clone()
                 else:
-                    tm["__" + prop] = tm[prop]  # backup
-                    tm[prop] = o3d.core.Tensor.empty(tm["__" + prop].shape,
-                                                     tm["__" + prop].dtype)
+                    tm[f"__{prop}"] = tm[prop]
+                    tm[prop] = o3d.core.Tensor.empty(tm[f"__{prop}"].shape, tm[f"__{prop}"].dtype)
                 self.swap_list.append((tm, prop))
                 return
-            if "__" + prop in tm:  # __prop -> prop
-                tm[prop] = tm["__" + prop]
-                del tm["__" + prop]
+            if f"__{prop}" in tm:  # __prop -> prop
+                tm[prop] = tm[f"__{prop}"]
+                del tm[f"__{prop}"]
             elif shape is not None and dtype is not None:
                 tm[prop] = o3d.core.Tensor.empty(shape, dtype)
             self.backup_list.append((tm, prop))
@@ -591,16 +587,22 @@ class RenderUpdate:
         def restore(self):
             show = "tensormap props: (swap_list)"
             for tm, prop in self.swap_list:  # swap
-                tm[prop], tm["__" + prop] = tm["__" + prop], tm[prop]
-                show += prop + repr(tm[prop][:0]) + '\t' + "__" + prop + repr(
-                    tm["__" + prop][:0])
+                tm[prop], tm[f"__{prop}"] = tm[f"__{prop}"], tm[prop]
+                show += (
+                    prop
+                    + repr(tm[prop][:0])
+                    + '\t'
+                    + "__"
+                    + prop
+                    + repr(tm[f"__{prop}"][:0])
+                )
 
             self.swap_list = []
             show += "\n (backup_list) "
             for tm, prop in self.backup_list:  # backup
-                tm["__" + prop] = tm[prop]
+                tm[f"__{prop}"] = tm[prop]
                 del tm[prop]
-                show += "__" + prop + repr(tm["__" + prop][:0])
+                show += f'__{prop}{repr(tm[f"__{prop}"][:0])}'
             self.backup_list = []
 
     def apply(self, o3dvis, geometry_name, geometry, inference_data_proto=None):
@@ -701,7 +703,6 @@ class RenderUpdate:
                             t_lines[idx:idx + self._LINES_PER_BBOX] = 0
                         idx += self._LINES_PER_BBOX
 
-        # PointCloud, Mesh, LineSet with colors
         elif (("shader" in updated or "colormap" in updated) and
               not geometry.has_valid_material()):
             material_update_flag = 1
@@ -727,26 +728,27 @@ class RenderUpdate:
                 lmax = max(self._label_to_names.keys())
                 material.scalar_min, material.scalar_max = lmin, lmax
                 if len(self._colormap) > 1:
-                    norm_cmap = list((float(label - lmin) / (lmax - lmin),
-                                      _u8_to_float(color))
-                                     for label, color in self._colormap.items())
-                    material.gradient.points = list(
-                        rendering.Gradient.Point(*lc) for lc in norm_cmap)
+                    norm_cmap = [
+                        (float(label - lmin) / (lmax - lmin), _u8_to_float(color))
+                        for label, color in self._colormap.items()
+                    ]
+                    material.gradient.points = [rendering.Gradient.Point(*lc) for lc in norm_cmap]
                 else:
                     material.gradient.points = [
                         rendering.Gradient.Point(0.0, [1.0, 0.0, 1.0, 1.0])
                     ]
-            # Colormap (RAINBOW / GREYSCALE): continuous data
             elif self._shader.startswith("unlitGradient.GRADIENT."):
                 if self._colormap is None:
                     self._colormap = deepcopy(
                         self.DICT_COLORMAPS[self._shader[23:]])
                 material.shader = "unlitGradient"
                 material.gradient = rendering.Gradient()
-                material.gradient.points = list(
-                    rendering.Gradient.Point(value,
-                                             _u8_to_float(color[:3]) + (1.,))
-                    for value, color in self._colormap.items())
+                material.gradient.points = [
+                    rendering.Gradient.Point(
+                        value, _u8_to_float(color[:3]) + (1.0,)
+                    )
+                    for value, color in self._colormap.items()
+                ]
                 material.gradient.mode = rendering.Gradient.GRADIENT
                 self._set_vis_minmax(geometry_vertex, material)
 
@@ -820,7 +822,7 @@ def to_dict_batch(o3d_geometry_list):
             'vertex_normals': np.stack(vertex_normals, axis=0),
             'triangle_indices': np.stack(triangle_indices, axis=0),
         }
-        if len(triangle_uvs) > 0:
+        if triangle_uvs:
             geo_dict.update(triangle_texture_uvs=np.stack(triangle_uvs, axis=0))
 
     elif isinstance(o3d_geometry_list[0], o3d.geometry.LineSet):

@@ -81,8 +81,8 @@ class _AsyncDataWriter:
         self._next_flush_time = time.time() + self._flush_secs
         self._filename_extension = filename_extension
         self._write_queue = queue.Queue(maxsize=self._max_queue)
-        self._file_handles = dict()
-        self._file_next_write_pos = dict()
+        self._file_handles = {}
+        self._file_next_write_pos = {}
         # protects _file_handles and _file_next_write_pos
         self._file_lock = threading.Lock()
         self._writer_thread = threading.Thread()
@@ -131,11 +131,7 @@ class _AsyncDataWriter:
         with self._file_lock:
             if tagfilepath not in self._file_handles:
                 # summary.writer.EventFileWriter name format
-                fullfilepath = "{}.{}.{}.{}{}".format(tagfilepath,
-                                                      int(time.time()),
-                                                      socket.gethostname(),
-                                                      os.getpid(),
-                                                      self._filename_extension)
+                fullfilepath = f"{tagfilepath}.{int(time.time())}.{socket.gethostname()}.{os.getpid()}{self._filename_extension}"
                 _makedirs(os.path.dirname(fullfilepath))
                 self._file_handles[tagfilepath] = _fileopen(fullfilepath, 'wb')
                 _log.debug(f"msgpack file {fullfilepath} opened for writing.")
@@ -325,7 +321,7 @@ def _convert_bboxes(bboxes):
                 dict1[key] = [val2]
 
     vertices_per_bbox = 14
-    data = dict()
+    data = {}
     if hasattr(bboxes[0], "__len__"):  # Nested Seq. (B, Nbb)
         for bb_batch in bboxes:
             append_key_values(
@@ -336,7 +332,7 @@ def _convert_bboxes(bboxes):
     data.pop('line_colors')  # No LUT. Assign colors during rendering.
     labels = data.pop('bbox_labels')
     confidences = tuple(np.float32(c) for c in data.pop('bbox_confidences'))
-    if len(labels) > 0 and len(confidences) > 0:
+    if len(labels) > 0 and confidences:
         for l, c, d in zip(labels, confidences, data['vertex_positions']):
             if len(c) != len(l) or vertices_per_bbox * len(c) != len(d):
                 raise ValueError(
@@ -786,9 +782,9 @@ def _add_3d_torch(self,
 
 # Make _add_3d_torch a bound method of SummaryWriter class. (MonkeyPatching)
 if torch is not None:
-    if not hasattr(SummaryWriter, "add_3d"):
-        SummaryWriter.add_3d = _add_3d_torch
-        SummaryWriter.add_3d.__doc__ = add_3d.__doc__  # Use docstring from TF function
-    else:
+    if hasattr(SummaryWriter, "add_3d"):
         warnings.warn("Cannot bind add_3d() to SummaryWriter. Binding exists.",
                       RuntimeWarning)
+    else:
+        SummaryWriter.add_3d = _add_3d_torch
+        SummaryWriter.add_3d.__doc__ = add_3d.__doc__  # Use docstring from TF function

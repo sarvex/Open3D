@@ -25,14 +25,13 @@ class PoseGraphWrapper:
 
     def add_node(self, index, pose):
         if index in self.dict_nodes:
-            print('Warning: node {} already exists, overwriting'.format(index))
+            print(f'Warning: node {index} already exists, overwriting')
         self.dict_nodes[index] = pose
 
     def add_edge(self, index_src, index_dst, pose_src2dst, info_src2dst,
                  is_loop):
         if (index_src, index_dst) in self.dict_edges:
-            print('Warning: edge ({}, {}) already exists, overwriting'.format(
-                index_src, index_dst))
+            print(f'Warning: edge ({index_src}, {index_dst}) already exists, overwriting')
         self.dict_edges[(index_src, index_dst)] = (pose_src2dst, info_src2dst,
                                                    is_loop)
 
@@ -42,23 +41,17 @@ class PoseGraphWrapper:
         # First map potentially non-consecutive indices to consecutive indices
         n_nodes = len(self.dict_nodes)
         if n_nodes < 3:
-            print('Only {} nodes found, abort pose graph construction'.format(
-                n_nodes))
+            print(f'Only {n_nodes} nodes found, abort pose graph construction')
 
-        nodes2indices = {}
-        for i, k in enumerate(sorted(self.dict_nodes.keys())):
-            nodes2indices[i] = k
-
+        nodes2indices = dict(enumerate(sorted(self.dict_nodes.keys())))
         for i in range(n_nodes):
             k = nodes2indices[i]
             pose_graph.nodes.append(
                 o3d.pipelines.registration.PoseGraphNode(self.dict_nodes[k]))
 
-        for (i, j) in self.dict_edges:
-            if not (i in self.dict_nodes) or not (j in self.dict_nodes):
-                print(
-                    'Edge node ({} {}) not found, abort pose graph construction'
-                    .format(i, j))
+        for i, j in self.dict_edges:
+            if i not in self.dict_nodes or j not in self.dict_nodes:
+                print(f'Edge node ({i} {j}) not found, abort pose graph construction')
             trans, info, is_loop = self.dict_edges[(i, j)]
             ki = nodes2indices[i]
             kj = nodes2indices[j]
@@ -75,15 +68,15 @@ class PoseGraphWrapper:
         nodes = self.pose_graph.nodes
         edges = self.pose_graph.edges
 
-        dict_nodes = {}
-        dict_edges = {}
-        for i, node in enumerate(nodes):
-            dict_nodes[i] = node.pose
-        for edge in edges:
-            dict_edges[(edge.source_node_id,
-                        edge.target_node_id)] = (edge.transformation,
-                                                 edge.information,
-                                                 edge.uncertain)
+        dict_nodes = {i: node.pose for i, node in enumerate(nodes)}
+        dict_edges = {
+            (edge.source_node_id, edge.target_node_id): (
+                edge.transformation,
+                edge.information,
+                edge.uncertain,
+            )
+            for edge in edges
+        }
         return dict_nodes, dict_edges
 
     def solve_(self, dist_threshold=0.07, preference_loop_closure=0.1):

@@ -61,8 +61,11 @@ def compute_jacobian_analytical(x0, y_shape, fn_grad, y_bp=None):
 
     y = np.zeros(y_shape, dtype=dtype)
 
-    y_bp_arr = np.broadcast_to(y_bp, y_shape) if not y_bp is None else np.ones(
-        y_shape, dtype=dtype)
+    y_bp_arr = (
+        np.broadcast_to(y_bp, y_shape)
+        if y_bp is not None
+        else np.ones(y_shape, dtype=dtype)
+    )
 
     for j in range(y_size):
         y.flat[j] = y_bp_arr.flat[j]
@@ -152,5 +155,4 @@ def check_gradients(x0,
             ('absdiff', np.abs(ana_J - num_J)),
         ]))
 
-    result = isclose and does_scale
-    return result
+    return isclose and does_scale

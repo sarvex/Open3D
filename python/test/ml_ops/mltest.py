@@ -75,9 +75,7 @@ def to_numpy(tensor):
         if tensor.device.type == 'cuda':
             tensor = tensor.cpu()
 
-        return tensor.numpy()
-    else:
-        return tensor.numpy()
+    return tensor.numpy()
 
 
 def to_torch(x, device):
@@ -128,18 +126,14 @@ def run_op(ml, device_name, check_device, fn, *args, **kwargs):
             assert tensor_on_device
 
     else:
-        raise ValueError('unsupported ml framework {}'.format(ml.module))
+        raise ValueError(f'unsupported ml framework {ml.module}')
 
-    # convert outputs to numpy.
     if hasattr(ans, 'numpy'):
-        new_ans = to_numpy(ans)
-    else:
-        # we assume the output is a (named)tuple if there is no numpy() function
-        return_type = type(ans)
-        output_as_numpy = [to_numpy(x) for x in ans]
-        new_ans = return_type(*output_as_numpy)
-
-    return new_ans
+        return to_numpy(ans)
+    # we assume the output is a (named)tuple if there is no numpy() function
+    return_type = type(ans)
+    output_as_numpy = [to_numpy(x) for x in ans]
+    return return_type(*output_as_numpy)
 
 
 def run_op_grad(ml, device_name, check_device, fn, x, y_attr_name,
@@ -153,17 +147,11 @@ def run_op_grad(ml, device_name, check_device, fn, x, y_attr_name,
             with tf.GradientTape() as tape:
                 tape.watch(x_var)
                 ans = fn(*_args, **_kwargs)
-                if y_attr_name:
-                    y = getattr(ans, y_attr_name)
-                else:
-                    y = ans
+                y = getattr(ans, y_attr_name) if y_attr_name else ans
                 dy_dx = tape.gradient(y, x_var, backprop_values)
 
                 if check_device:
-                    # check if the gradient is using device memory
-                    tensor_on_device = False
-                    if device_name in dy_dx.device:
-                        tensor_on_device = True
+                    tensor_on_device = device_name in dy_dx.device
                     assert tensor_on_device
     elif ml.module.__name__ == 'torch':
         x_var = to_torch(x, device_name)
@@ -175,22 +163,18 @@ def run_op_grad(ml, device_name, check_device, fn, x, y_attr_name,
         }
 
         ans = fn(*_args, **_kwargs)
-        if y_attr_name:
-            y = getattr(ans, y_attr_name)
-        else:
-            y = ans
+        y = getattr(ans, y_attr_name) if y_attr_name else ans
         y.backward(to_torch(backprop_values, device_name))
         dy_dx = x_var.grad
 
         if check_device:
-            # check if the gradient is using device memory
-            tensor_on_device = False
-            if isinstance(dy_dx,
-                          torch.Tensor) and device_name == dy_dx.device.type:
-                tensor_on_device = True
+            tensor_on_device = (
+                isinstance(dy_dx, torch.Tensor)
+                and device_name == dy_dx.device.type
+            )
             assert tensor_on_device
     else:
-        raise ValueError('unsupported ml framework {}'.format(ml.module))
+        raise ValueError(f'unsupported ml framework {ml.module}')
 
     return to_numpy(dy_dx)
 

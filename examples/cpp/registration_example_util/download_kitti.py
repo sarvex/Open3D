@@ -49,11 +49,9 @@ def bin_to_pcd(binFileName):
     size_float = 4
     list_pcd = []
     with open(binFileName, "rb") as f:
-        byte = f.read(size_float * 4)
-        while byte:
+        while byte := f.read(size_float * 4):
             x, y, z, intensity = struct.unpack("ffff", byte)
             list_pcd.append([x, y, z])
-            byte = f.read(size_float * 4)
     np_pcd = np.asarray(list_pcd)
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(np_pcd)
@@ -70,8 +68,8 @@ def preprocess_and_save(source_folder,
     filenames = get_file_list(source_folder, ".bin")
 
     print(
-        "Converting .bin to .ply files and pre-processing from frame {} to index {}"
-        .format(start_idx, end_idx))
+        f"Converting .bin to .ply files and pre-processing from frame {start_idx} to index {end_idx}"
+    )
 
     if (end_idx < start_idx):
         raise RuntimeError("End index must be smaller than start index.")
@@ -99,7 +97,7 @@ def preprocess_and_save(source_folder,
 
         # extract name from path.
         name = str(path).rsplit('/', 1)[-1]
-        name = name[:-3] + "ply"
+        name = f"{name[:-3]}ply"
 
         # write to the destination folder.
         output_path = destination_folder + name
@@ -109,64 +107,64 @@ def preprocess_and_save(source_folder,
 def file_downloader(url):
     file_name = url.split('/')[-1]
     u = urlopen(url)
-    f = open(file_name, "wb")
-    if pyver == 2:
-        meta = u.info()
-        file_size = int(meta.getheaders("Content-Length")[0])
-    elif pyver == 3:
-        file_size = int(u.getheader("Content-Length"))
-    print("Downloading: %s " % file_name)
+    with open(file_name, "wb") as f:
+        if pyver == 2:
+            meta = u.info()
+            file_size = int(meta.getheaders("Content-Length")[0])
+        elif pyver == 3:
+            file_size = int(u.getheader("Content-Length"))
+        print(f"Downloading: {file_name} ")
 
-    file_size_dl = 0
-    block_sz = 8192
-    progress = 0
-    while True:
-        buffer = u.read(block_sz)
-        if not buffer:
-            break
-        file_size_dl += len(buffer)
-        f.write(buffer)
-        if progress + 10 <= (file_size_dl * 100. / file_size):
-            progress = progress + 10
-            print(" %.1f / %.1f MB (%.0f %%)" % \
-                    (file_size_dl/(1024*1024), file_size/(1024*1024), progress))
-    f.close()
+        file_size_dl = 0
+        block_sz = 8192
+        progress = 0
+        while True:
+            buffer = u.read(block_sz)
+            if not buffer:
+                break
+            file_size_dl += len(buffer)
+            f.write(buffer)
+            if progress + 10 <= (file_size_dl * 100. / file_size):
+                progress = progress + 10
+                print(" %.1f / %.1f MB (%.0f %%)" % \
+                        (file_size_dl/(1024*1024), file_size/(1024*1024), progress))
 
 
 def unzip_data(path_zip, path_extract_to):
-    print("Unzipping %s" % path_zip)
+    print(f"Unzipping {path_zip}")
     zip_ref = zipfile.ZipFile(path_zip, 'r')
     zip_ref.extractall(path_extract_to)
     zip_ref.close()
-    print("Extracted to %s" % path_extract_to)
+    print(f"Extracted to {path_extract_to}")
 
 
 def get_kitti_sample_dataset(dataset_path, dataset_name):
-    # data preparation
-    download_parent_path = "https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/"
     # download and unzip dataset
     path = join(dataset_path, dataset_name)
     if not os.path.exists(path):
         print("==================================")
-        download_path = join(download_parent_path + dataset_name,
-                             dataset_name + '_sync.zip')
+        # data preparation
+        download_parent_path = "https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/"
+        download_path = join(
+            download_parent_path + dataset_name, f'{dataset_name}_sync.zip'
+        )
         file_downloader(download_path)
-        unzip_data("%s_sync.zip" % dataset_name,
-                   "%s/%s" % (dataset_path, dataset_name))
-        os.remove("%s_sync.zip" % dataset_name)
+        unzip_data(f"{dataset_name}_sync.zip", f"{dataset_path}/{dataset_name}")
+        os.remove(f"{dataset_name}_sync.zip")
         print("")
     else:
         print(
-            "The folder: {}, already exists. To re-download, kindly delete the folder and re-run this script."
-            .format(path))
+            f"The folder: {path}, already exists. To re-download, kindly delete the folder and re-run this script."
+        )
 
 
 def find_source_pcd_folder_path(dataset_name):
     l = dataset_name.split('_')
-    temp = l[0] + '_' + l[1] + '_' + l[2]
+    temp = f'{l[0]}_{l[1]}_{l[2]}'
     dataset_name_parent = join(dataset_name, temp)
-    dataset_name = join(dataset_name_parent,
-                        dataset_name + '_sync/velodyne_points/data/')
+    dataset_name = join(
+        dataset_name_parent, f'{dataset_name}_sync/velodyne_points/data/'
+    )
     return dataset_name
 
 
@@ -205,7 +203,7 @@ if __name__ == '__main__':
             print(name)
         sys.exit()
 
-    if not args.dataset_name in valid_dataset_list:
+    if args.dataset_name not in valid_dataset_list:
         raise RuntimeError(
             "Dataset not present, kindly try with a different dataset. \nRun with --print_available_datasets, to get the list of available datasets."
         )

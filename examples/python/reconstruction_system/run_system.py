@@ -91,11 +91,7 @@ if __name__ == "__main__":
 
     assert config is not None
 
-    if args.debug_mode:
-        config['debug_mode'] = True
-    else:
-        config['debug_mode'] = False
-
+    config['debug_mode'] = bool(args.debug_mode)
     config['device'] = args.device
 
     print("====================================")

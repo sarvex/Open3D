@@ -20,7 +20,7 @@ def main():
         sys.exit()
 
     model_dir = os.path.normpath(os.path.realpath(sys.argv[1]))
-    model_name = os.path.join(model_dir, os.path.basename(model_dir) + ".obj")
+    model_name = os.path.join(model_dir, f"{os.path.basename(model_dir)}.obj")
     mesh = o3d.t.geometry.TriangleMesh.from_legacy(
         o3d.io.read_triangle_mesh(model_name))
     material = mesh.material
@@ -28,7 +28,7 @@ def main():
 
     names_to_o3dprop = {"ao": "ambient_occlusion"}
     for texture in ("albedo", "normal", "ao", "metallic", "roughness"):
-        texture_file = os.path.join(model_dir, texture + ".png")
+        texture_file = os.path.join(model_dir, f"{texture}.png")
         if os.path.exists(texture_file):
             texture = names_to_o3dprop.get(texture, texture)
             material.texture_maps[texture] = o3d.t.io.read_image(texture_file)

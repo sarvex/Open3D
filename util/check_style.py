@@ -88,10 +88,7 @@ class CppFormatter:
             file_path,
         ]
         result = subprocess.check_output(cmd).decode("utf-8")
-        if "<replacement " in result:
-            is_valid_style = False
-        else:
-            is_valid_style = True
+        is_valid_style = "<replacement " not in result
         return (is_valid_style, is_valid_header)
 
     @staticmethod
@@ -294,11 +291,10 @@ def _glob_files(directories, extensions):
     for directory in directories:
         directory = open3d_root_dir / directory
         for extension in extensions:
-            extension_regex = "*." + extension
+            extension_regex = f"*.{extension}"
             file_paths.extend(directory.rglob(extension_regex))
     file_paths = [str(file_path) for file_path in file_paths]
-    file_paths = sorted(list(set(file_paths)))
-    return file_paths
+    return sorted(list(set(file_paths)))
 
 
 def _find_clang_format():
@@ -315,7 +311,7 @@ def _find_clang_format():
         version_str = subprocess.check_output([bin_path, "--version"
                                               ]).decode("utf-8").strip()
         match = re.match("^clang-format version ([0-9.]*).*$", version_str)
-        return match.group(1) if match else None
+        return match[1] if match else None
 
     def parse_version_major(bin_path):
         """
@@ -331,9 +327,8 @@ def _find_clang_format():
         bin_path = shutil.which(bin_name)
         if bin_path is None:
             return None
-        else:
-            major = parse_version_major(bin_path)
-            return bin_path if major == required_clang_format_major else None
+        major = parse_version_major(bin_path)
+        return bin_path if major == required_clang_format_major else None
 
     bin_path = find_bin_by_name("clang-format")
     if bin_path is not None:
@@ -353,8 +348,11 @@ def _find_clang_format():
 
 def _filter_files(files, ignored_patterns):
     return [
-        file for file in files if not any(
-            [ignored_pattern in file for ignored_pattern in ignored_patterns])
+        file
+        for file in files
+        if all(
+            ignored_pattern not in file for ignored_pattern in ignored_patterns
+        )
     ]
 
 
@@ -421,26 +419,25 @@ def main():
                               no_parallel=args.no_parallel,
                               verbose=args.verbose))
 
-    if len(changed_files) == 0 and len(wrong_header_files) == 0:
+    if not changed_files and not wrong_header_files:
         print("All files passed style check")
         exit(0)
 
     if args.apply:
-        if len(changed_files) != 0:
+        if changed_files:
             print("Style applied to the following files:")
             print("\n".join(changed_files))
-        if len(wrong_header_files) != 0:
+        if wrong_header_files:
             print("Please correct license header *manually* in the following "
                   "files (see util/check_style.py for the standard header):")
             print("\n".join(wrong_header_files))
             exit(1)
-    else:
-        error_files_no_duplicates = list(set(changed_files +
-                                             wrong_header_files))
-        if len(error_files_no_duplicates) != 0:
-            print("Style error found in the following files:")
-            print("\n".join(error_files_no_duplicates))
-            exit(1)
+    elif error_files_no_duplicates := list(
+        set(changed_files + wrong_header_files)
+    ):
+        print("Style error found in the following files:")
+        print("\n".join(error_files_no_duplicates))
+        exit(1)
 
 
 if __name__ == "__main__":

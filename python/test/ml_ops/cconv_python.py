@@ -51,7 +51,7 @@ def map_cube_to_cylinder(points, inverse=False):
     if inverse:
         for i, p in enumerate(points):
             x, y, z = p
-            if np.allclose(p[0:2], np.zeros_like(p[0:2])):
+            if np.allclose(p[:2], np.zeros_like(p[:2])):
                 result[i] = (0,0,z)
             elif np.abs(y) <= x and x > 0:
                 result[i] = (np.sqrt(x*x+y*y), 4/np.pi *np.sqrt(x*x+y*y)*np.arctan(y/x), z)
@@ -65,7 +65,7 @@ def map_cube_to_cylinder(points, inverse=False):
 
         for i, p in enumerate(points):
             x, y, z = p
-            if np.count_nonzero(p[0:2]) == 0:
+            if np.count_nonzero(p[:2]) == 0:
                 result[i] = (0,0,z)
             elif np.abs(y) <= np.abs(x):
                 result[i] = (x*np.cos(y/x*np.pi/4), x*np.sin(y/x*np.pi/4), z)
@@ -243,10 +243,7 @@ def window_function(pos, inv_extents, window, window_params):
 
         # the window parameter defines the distance at which the value decreases
         # linearly to 0
-        if d > window_params[0]:
-            return (1 - d) / (1 - window_params[0])
-        else:
-            return 1
+        return (1 - d) / (1 - window_params[0]) if d > window_params[0] else 1
     elif window == POLY:
         p *= 2 * inv_extents  # p is now a position in a sphere with radius 1
         r_sqr = np.sum(p * p)
@@ -396,18 +393,16 @@ def cconv(filter, out_positions, extent, offset, inp_positions, inp_features,
     assert filter.shape[3] == inp_features.shape[-1]
     assert out_positions.ndim == 2
     assert extent.ndim == 2
-    assert extent.shape[0] == 1 or extent.shape[0] == out_positions.shape[0]
+    assert extent.shape[0] in [1, out_positions.shape[0]]
     assert extent.shape[1] in (1, 3)
     assert offset.ndim == 1 and offset.shape[0] == 3
     assert inp_positions.ndim == 2
     assert inp_positions.shape[0] == inp_features.shape[0]
     assert inp_features.ndim == 2
     assert inp_importance.ndim == 1
-    assert (inp_importance.shape[0] == 0 or
-            inp_importance.shape[0] == inp_positions.shape[0])
+    assert inp_importance.shape[0] in [0, inp_positions.shape[0]]
     assert neighbors_importance.ndim == 1
-    assert (neighbors_importance.shape[0] == 0 or
-            neighbors_importance.shape[0] == neighbors_index.shape[0])
+    assert neighbors_importance.shape[0] in [0, neighbors_index.shape[0]]
     assert neighbors_index.ndim == 1
     assert neighbors_row_splits.ndim == 1
     assert neighbors_row_splits.shape[0] == out_positions.shape[0] + 1
@@ -431,7 +426,7 @@ def cconv(filter, out_positions, extent, offset, inp_positions, inp_features,
     if neighbors_importance.shape[0] == 0:
         neighbors_importance = np.ones(neighbors_index.shape)
 
-    filter_xyz_size = np.array(list(reversed(filter.shape[0:3])))
+    filter_xyz_size = np.array(list(reversed(filter.shape[:3])))
 
     out_features = np.zeros((num_out, out_channels))
 
@@ -469,9 +464,8 @@ def cconv(filter, out_positions, extent, offset, inp_positions, inp_features,
 
             outfeat += infeat @ filter_value
 
-        if normalize:
-            if n_importance_sum != 0:
-                outfeat /= n_importance_sum
+        if normalize and n_importance_sum != 0:
+            outfeat /= n_importance_sum
 
     return out_features
 
@@ -494,18 +488,16 @@ def cconv_backprop_filter(filter, out_positions, extent, offset, inp_positions,
     assert filter.shape[3] == inp_features.shape[-1]
     assert out_positions.ndim == 2
     assert extent.ndim == 2
-    assert extent.shape[0] == 1 or extent.shape[0] == out_positions.shape[0]
+    assert extent.shape[0] in [1, out_positions.shape[0]]
     assert extent.shape[1] in (1, 3)
     assert offset.ndim == 1 and offset.shape[0] == 3
     assert inp_positions.ndim == 2
     assert inp_positions.shape[0] == inp_features.shape[0]
     assert inp_features.ndim == 2
     assert inp_importance.ndim == 1
-    assert (inp_importance.shape[0] == 0 or
-            inp_importance.shape[0] == inp_positions.shape[0])
+    assert inp_importance.shape[0] in [0, inp_positions.shape[0]]
     assert neighbors_importance.ndim == 1
-    assert (neighbors_importance.shape[0] == 0 or
-            neighbors_importance.shape[0] == neighbors_index.shape[0])
+    assert neighbors_importance.shape[0] in [0, neighbors_index.shape[0]]
     assert neighbors_index.ndim == 1
     assert neighbors_row_splits.ndim == 1
     assert neighbors_row_splits.shape[0] == out_positions.shape[0] + 1
@@ -529,7 +521,7 @@ def cconv_backprop_filter(filter, out_positions, extent, offset, inp_positions,
     if neighbors_importance.shape[0] == 0:
         neighbors_importance = np.ones(neighbors_index.shape)
 
-    filter_xyz_size = np.array(list(reversed(filter.shape[0:3])))
+    filter_xyz_size = np.array(list(reversed(filter.shape[:3])))
 
     filter_backprop = np.zeros_like(filter)
 
@@ -649,10 +641,9 @@ def cconv_transpose(filter, out_positions, out_importance, extent, offset,
     assert filter.shape[3] == inp_features.shape[-1]
     assert out_positions.ndim == 2
     assert out_importance.ndim == 1
-    assert (out_importance.shape[0] == 0 or
-            out_importance.shape[0] == out_positions.shape[0])
+    assert out_importance.shape[0] in [0, out_positions.shape[0]]
     assert extent.ndim == 2
-    assert extent.shape[0] == 1 or extent.shape[0] == inp_positions.shape[0]
+    assert extent.shape[0] in [1, inp_positions.shape[0]]
     assert extent.shape[1] in (1, 3)
     assert offset.ndim == 1 and offset.shape[0] == 3
     assert inp_positions.ndim == 2
@@ -660,14 +651,12 @@ def cconv_transpose(filter, out_positions, out_importance, extent, offset,
     assert inp_features.ndim == 2
     assert inp_neighbors_index.ndim == 1
     assert inp_neighbors_importance.ndim == 1
-    assert (inp_neighbors_importance.shape[0] == 0 or
-            inp_neighbors_importance.shape[0] == inp_neighbors_index.shape[0])
+    assert inp_neighbors_importance.shape[0] in [0, inp_neighbors_index.shape[0]]
     assert inp_neighbors_row_splits.ndim == 1
     assert inp_neighbors_row_splits.shape[0] == inp_positions.shape[0] + 1
     assert neighbors_index.ndim == 1
     assert neighbors_importance.ndim == 1
-    assert (neighbors_importance.shape[0] == 0 or
-            neighbors_importance.shape[0] == neighbors_index.shape[0])
+    assert neighbors_importance.shape[0] in [0, neighbors_index.shape[0]]
     assert neighbors_row_splits.ndim == 1
     assert neighbors_row_splits.shape[0] == out_positions.shape[0] + 1
     assert neighbors_index.shape[0] == inp_neighbors_index.shape[0]
@@ -709,7 +698,7 @@ def cconv_transpose(filter, out_positions, out_importance, extent, offset,
                         inp_neighbors_start:inp_neighbors_end]):
                 inp_n_importance_sums[inp_idx] += n_importance
 
-    filter_xyz_size = np.array(list(reversed(filter.shape[0:3])))
+    filter_xyz_size = np.array(list(reversed(filter.shape[:3])))
 
     out_features = np.zeros((num_out, out_channels))
 
@@ -773,25 +762,22 @@ def cconv_transpose_backprop_filter(
     assert filter.shape[3] == inp_features.shape[-1]
     assert out_positions.ndim == 2
     assert extent.ndim == 2
-    assert extent.shape[0] == 1 or extent.shape[0] == inp_positions.shape[0]
+    assert extent.shape[0] in [1, inp_positions.shape[0]]
     assert extent.shape[1] in (1, 3)
     assert offset.ndim == 1 and offset.shape[0] == 3
     assert inp_positions.ndim == 2
     assert inp_positions.shape[0] == inp_features.shape[0]
     assert inp_features.ndim == 2
     assert out_importance.ndim == 1
-    assert (out_importance.shape[0] == 0 or
-            out_importance.shape[0] == out_positions.shape[0])
+    assert out_importance.shape[0] in [0, out_positions.shape[0]]
     assert inp_neighbors_index.ndim == 1
     assert inp_neighbors_importance.ndim == 1
-    assert (inp_neighbors_importance.shape[0] == 0 or
-            inp_neighbors_importance.shape[0] == inp_neighbors_index.shape[0])
+    assert inp_neighbors_importance.shape[0] in [0, inp_neighbors_index.shape[0]]
     assert inp_neighbors_row_splits.ndim == 1
     assert inp_neighbors_row_splits.shape[0] == inp_positions.shape[0] + 1
     assert neighbors_index.ndim == 1
     assert neighbors_importance.ndim == 1
-    assert (neighbors_importance.shape[0] == 0 or
-            neighbors_importance.shape[0] == neighbors_index.shape[0])
+    assert neighbors_importance.shape[0] in [0, neighbors_index.shape[0]]
     assert neighbors_row_splits.ndim == 1
     assert neighbors_row_splits.shape[0] == out_positions.shape[0] + 1
     assert neighbors_index.shape[0] == inp_neighbors_index.shape[0]
@@ -832,7 +818,7 @@ def cconv_transpose_backprop_filter(
                         inp_neighbors_start:inp_neighbors_end]):
                 inp_n_importance_sums[inp_idx] += n_importance
 
-    filter_xyz_size = np.array(list(reversed(filter.shape[0:3])))
+    filter_xyz_size = np.array(list(reversed(filter.shape[:3])))
 
     filter_backprop = np.zeros_like(filter)
 

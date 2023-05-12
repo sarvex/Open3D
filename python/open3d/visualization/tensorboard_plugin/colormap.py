@@ -24,8 +24,7 @@ class Colormap:
 
         def __repr__(self):
             """Represent the color and value in the colormap."""
-            return "Colormap.Point(" + str(self.value) + ", " + str(
-                self.color) + ")"
+            return f"Colormap.Point({str(self.value)}, {str(self.color)})"
 
     # The value of each Point must be greater than the previous
     # (e.g. [0.0, 0.1, 0.4, 1.0], not [0.0, 0.4, 0.1, 1.0]

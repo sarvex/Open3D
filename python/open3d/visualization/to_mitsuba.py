@@ -24,7 +24,7 @@ def o3d_material_to_bsdf(mat, vertex_color=False):
         else:
             return {'type': 'rgb', 'value': value}
 
-    base_color = mat.vector_properties['base_color'][0:3]
+    base_color = mat.vector_properties['base_color'][:3]
     roughness = mat.scalar_properties['roughness']
     metallic = mat.scalar_properties['metallic']
     reflectance = mat.scalar_properties['reflectance']

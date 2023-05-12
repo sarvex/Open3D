@@ -128,5 +128,5 @@ def dataset_loader(dataset_name):
     # Set the default values for non-specified parameters.
     initialize_config(config)
 
-    print('Loaded data from {}'.format(config['path_dataset']))
+    print(f"Loaded data from {config['path_dataset']}")
     return config

@@ -25,7 +25,6 @@ pytestmark = mltest.default_marks
                              ([3,3,3],            1,           1,               False,              False),
                              ([5,5,5],            5,           3,               False,               True),
                         ])
-# yapf: enable
 @mltest.parametrize.ml_tf_only
 @pytest.mark.parametrize(
     'feat_out_type',
@@ -78,11 +77,10 @@ def test_compare_to_conv3d(ml, feat_out_type, real_type, filter_size,
                                                 (256, 3)).astype(np_real_type),
                               axis=0)
     inp_positions_int = inp_positions.astype(np.int32)
-    if (with_inp_importance):
-        inp_importance = mltensor.random_uniform(inp_positions.shape[0:1],
-                                                 dtype=feat_type,
-                                                 minval=-1,
-                                                 maxval=1)
+    if with_inp_importance:
+        inp_importance = mltensor.random_uniform(
+            inp_positions.shape[:1], dtype=feat_type, minval=-1, maxval=1
+        )
     else:
         inp_importance = mltensor.empty((0,), dtype=feat_type)
     out_positions = np.unique(np.random.randint(
@@ -96,9 +94,9 @@ def test_compare_to_conv3d(ml, feat_out_type, real_type, filter_size,
     extent = extent.astype(np_real_type)
     offset = np.array([0.0, 0.0, 0.0], dtype=np_real_type)
 
-    inp_features = mltensor.random_uniform(size=inp_positions.shape[0:1] +
-                                           (in_channels,),
-                                           dtype=feat_type)
+    inp_features = mltensor.random_uniform(
+        size=(inp_positions.shape[:1] + (in_channels,)), dtype=feat_type
+    )
     fixed_radius_search = ml.layers.FixedRadiusSearch(metric='Linf')
     neighbors_index, neighbors_row_splits, _ = mltest.run_op(
         ml, ml.device, False, fixed_radius_search, inp_positions / extent,
@@ -157,14 +155,12 @@ def test_compare_to_conv3d(ml, feat_out_type, real_type, filter_size,
 
 # @pytest.mark.skip()
 @mltest.parametrize.ml
-# yapf: disable
 @pytest.mark.parametrize("filter_size, out_channels, in_channels, with_inp_importance, with_neighbors_importance, with_individual_extent, with_normalization, align_corners, coordinate_mapping, interpolation",[
                              ([3,5,1],            2,           7,                True,                     False,                  False,              False,          True,        'identity', 'nearest_neighbor'),
                              ([3,3,3],            1,           1,               False,                     False,                   True,              False,         False, 'ball_to_cube_radial',       'linear'),
                              ([5,5,5],            5,           3,               False,                      True,                  False,              True, False, 'ball_to_cube_volume_preserving', 'linear_border'),
                              ([5,1,3],            3,           4,               False,                      True,                  False,              False,         False,           'identity',        'linear'),
                         ])
-# yapf: enable
 @pytest.mark.parametrize('dtype', [np.float32])
 def test_cconv_gradient(ml, dtype, filter_size, out_channels, in_channels,
                         with_inp_importance, with_neighbors_importance,
@@ -203,8 +199,9 @@ def test_cconv_gradient(ml, dtype, filter_size, out_channels, in_channels,
         extent = np.array([[0.4]], dtype=dtype)
     offset = np.array([0.0, 0.0, 0.0], dtype=dtype)
 
-    inp_features = np.random.uniform(size=inp_positions.shape[0:1] +
-                                     (in_channels,)).astype(dtype)
+    inp_features = np.random.uniform(
+        size=(inp_positions.shape[:1] + (in_channels,))
+    ).astype(dtype)
     fixed_radius_search = ml.layers.FixedRadiusSearch(metric='Linf')
     neighbors_index, neighbors_row_splits, _ = mltest.run_op(
         ml, ml.device, False, fixed_radius_search, inp_positions, out_positions,

@@ -20,28 +20,32 @@ def lineset_from_pose_graph(pose_graph):
     lines = []
 
     cnt = 0
+    l = 0.1
     for node in pose_graph.nodes:
         pose = np.array(node.pose)
 
-        l = 0.1
-        points.append((pose @ np.array([0, 0, 0, 1]).T)[:3])
-        points.append((pose @ np.array([l, l, 2 * l, 1]).T)[:3])
-        points.append((pose @ np.array([l, -l, 2 * l, 1]).T)[:3])
-        points.append((pose @ np.array([-l, -l, 2 * l, 1]).T)[:3])
-        points.append((pose @ np.array([-l, l, 2 * l, 1]).T)[:3])
-
-        lines.append([cnt + 0, cnt + 1])
-        lines.append([cnt + 0, cnt + 2])
-        lines.append([cnt + 0, cnt + 3])
-        lines.append([cnt + 0, cnt + 4])
-        lines.append([cnt + 1, cnt + 2])
-        lines.append([cnt + 2, cnt + 3])
-        lines.append([cnt + 3, cnt + 4])
-        lines.append([cnt + 4, cnt + 1])
-
-        for i in range(0, EDGES_PER_FRUSTUM):
-            colors.append(np.array([1, 0, 0]))
-
+        points.extend(
+            (
+                (pose @ np.array([0, 0, 0, 1]).T)[:3],
+                (pose @ np.array([l, l, 2 * l, 1]).T)[:3],
+                (pose @ np.array([l, -l, 2 * l, 1]).T)[:3],
+                (pose @ np.array([-l, -l, 2 * l, 1]).T)[:3],
+                (pose @ np.array([-l, l, 2 * l, 1]).T)[:3],
+            )
+        )
+        lines.extend(
+            (
+                [cnt + 0, cnt + 1],
+                [cnt + 0, cnt + 2],
+                [cnt + 0, cnt + 3],
+                [cnt + 0, cnt + 4],
+                [cnt + 1, cnt + 2],
+                [cnt + 2, cnt + 3],
+                [cnt + 3, cnt + 4],
+                [cnt + 4, cnt + 1],
+            )
+        )
+        colors.extend(np.array([1, 0, 0]) for _ in range(0, EDGES_PER_FRUSTUM))
         cnt += POINTS_PER_FRUSTUM
 
     for edge in pose_graph.edges:

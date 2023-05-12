@@ -13,7 +13,7 @@ import operator
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/..")
+sys.path.append(f"{os.path.dirname(os.path.realpath(__file__))}/..")
 from open3d_benchmark import list_tensor_sizes, list_non_bool_dtypes, to_numpy_dtype
 
 

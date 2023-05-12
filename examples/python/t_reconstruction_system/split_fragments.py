@@ -19,8 +19,7 @@ def split_fragments(config):
 
     os.makedirs(os.path.join(config.path_dataset, 'fragments'), exist_ok=True)
 
-    frag_id = 0
-    for i in range(0, len(depth_file_names), config.fragment_size):
+    for frag_id, i in enumerate(range(0, len(depth_file_names), config.fragment_size)):
         start = i
         end = min(i + config.fragment_size, len(depth_file_names))
 
@@ -34,8 +33,6 @@ def split_fragments(config):
                    depth_file_names[start:end],
                    fmt='%s',
                    delimiter='')
-
-        frag_id += 1
 
 
 def load_fragments(config):

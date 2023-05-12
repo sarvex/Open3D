@@ -128,36 +128,35 @@ def get_intersecting_boxes_mesh():
 def file_downloader(url, out_dir="."):
     file_name = url.split('/')[-1]
     u = urlopen(url)
-    f = open(os.path.join(out_dir, file_name), "wb")
-    if pyver == 2:
-        meta = u.info()
-        file_size = int(meta.getheaders("Content-Length")[0])
-    elif pyver == 3:
-        file_size = int(u.getheader("Content-Length"))
-    print("Downloading: %s " % file_name)
+    with open(os.path.join(out_dir, file_name), "wb") as f:
+        if pyver == 2:
+            meta = u.info()
+            file_size = int(meta.getheaders("Content-Length")[0])
+        elif pyver == 3:
+            file_size = int(u.getheader("Content-Length"))
+        print(f"Downloading: {file_name} ")
 
-    file_size_dl = 0
-    block_sz = 8192
-    progress = 0
-    while True:
-        buffer = u.read(block_sz)
-        if not buffer:
-            break
-        file_size_dl += len(buffer)
-        f.write(buffer)
-        if progress + 10 <= (file_size_dl * 100. / file_size):
-            progress = progress + 10
-            print(" %.1f / %.1f MB (%.0f %%)" % \
-                    (file_size_dl/(1024*1024), file_size/(1024*1024), progress))
-    f.close()
+        file_size_dl = 0
+        block_sz = 8192
+        progress = 0
+        while True:
+            buffer = u.read(block_sz)
+            if not buffer:
+                break
+            file_size_dl += len(buffer)
+            f.write(buffer)
+            if progress + 10 <= (file_size_dl * 100. / file_size):
+                progress = progress + 10
+                print(" %.1f / %.1f MB (%.0f %%)" % \
+                        (file_size_dl/(1024*1024), file_size/(1024*1024), progress))
 
 
 def unzip_data(path_zip, path_extract_to):
-    print("Unzipping %s" % path_zip)
+    print(f"Unzipping {path_zip}")
     zip_ref = zipfile.ZipFile(path_zip, 'r')
     zip_ref.extractall(path_extract_to)
     zip_ref.close()
-    print("Extracted to %s" % path_extract_to)
+    print(f"Extracted to {path_extract_to}")
 
 
 def sorted_alphanum(file_list_ordered):
@@ -182,8 +181,7 @@ def get_file_list(path, extension=None):
 def add_if_exists(path_dataset, folder_names):
     for folder_name in folder_names:
         if exists(join(path_dataset, folder_name)):
-            path = join(path_dataset, folder_name)
-            return path
+            return join(path_dataset, folder_name)
     raise FileNotFoundError(
         f"None of the folders {folder_names} found in {path_dataset}")
 
@@ -191,13 +189,13 @@ def add_if_exists(path_dataset, folder_names):
 def read_rgbd_image(color_file, depth_file, convert_rgb_to_intensity, config):
     color = o3d.io.read_image(color_file)
     depth = o3d.io.read_image(depth_file)
-    rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
+    return o3d.geometry.RGBDImage.create_from_color_and_depth(
         color,
         depth,
         depth_scale=config["depth_scale"],
         depth_trunc=config["depth_max"],
-        convert_rgb_to_intensity=convert_rgb_to_intensity)
-    return rgbd_image
+        convert_rgb_to_intensity=convert_rgb_to_intensity,
+    )
 
 
 def get_rgbd_folders(path_dataset):
@@ -215,27 +213,23 @@ def get_rgbd_file_lists(path_dataset):
 
 
 def make_clean_folder(path_folder):
-    if not exists(path_folder):
-        makedirs(path_folder)
-    else:
+    if exists(path_folder):
         shutil.rmtree(path_folder)
-        makedirs(path_folder)
+    makedirs(path_folder)
 
 
 def check_folder_structure(path_dataset):
     if isfile(path_dataset) and path_dataset.endswith(".bag"):
         return
     path_color, path_depth = get_rgbd_folders(path_dataset)
-    assert exists(path_depth), \
-            "Path %s is not exist!" % path_depth
-    assert exists(path_color), \
-            "Path %s is not exist!" % path_color
+    assert exists(path_depth), f"Path {path_depth} is not exist!"
+    assert exists(path_color), f"Path {path_color} is not exist!"
 
 
 def write_poses_to_log(filename, poses):
     with open(filename, 'w') as f:
         for i, pose in enumerate(poses):
-            f.write('{} {} {}\n'.format(i, i, i + 1))
+            f.write(f'{i} {i} {i + 1}\n')
             f.write('{0:.8f} {1:.8f} {2:.8f} {3:.8f}\n'.format(
                 pose[0, 0], pose[0, 1], pose[0, 2], pose[0, 3]))
             f.write('{0:.8f} {1:.8f} {2:.8f} {3:.8f}\n'.format(
@@ -316,15 +310,13 @@ class CameraPose:
 def read_trajectory(filename):
     traj = []
     with open(filename, 'r') as f:
-        metastr = f.readline()
-        while metastr:
+        while metastr := f.readline():
             metadata = list(map(int, metastr.split()))
             mat = np.zeros(shape=(4, 4))
             for i in range(4):
                 matstr = f.readline()
                 mat[i, :] = np.fromstring(matstr, dtype=float, sep=' \t')
             traj.append(CameraPose(metadata, mat))
-            metastr = f.readline()
     return traj
 
 
@@ -343,7 +335,6 @@ def initialize_opencv():
     try:
         import cv2
     except ImportError:
-        pass
         print("OpenCV is not detected. Using Identity as an initial")
         opencv_installed = False
     if opencv_installed:

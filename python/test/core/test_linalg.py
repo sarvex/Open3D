@@ -412,8 +412,10 @@ def test_lstsq(device, dtype):
             a = o3c.Tensor.zeros(a_shape, dtype=dtype, device=device)
             b = o3c.Tensor.zeros(b_shape, dtype=dtype, device=device)
             a.lstsq(b)
-            assert 'must satisfy rows({}) > cols({})'.format(
-                a_shape[0], a_shape[1]) in str(excinfo.value)
+            assert (
+                f'must satisfy rows({a_shape[0]}) > cols({a_shape[1]})'
+                in str(excinfo.value)
+            )
 
 
 @pytest.mark.parametrize("device", list_devices())

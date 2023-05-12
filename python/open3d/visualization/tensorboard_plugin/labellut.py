@@ -72,7 +72,7 @@ class LabelLUT:
         self.labels[value] = self.Label(name, value, color)
 
     @classmethod
-    def get_colors(self, name='default', mode=None):
+    def get_colors(cls, name='default', mode=None):
         """Return full list of colors in the lookup table.
 
         Args:
@@ -87,11 +87,9 @@ class LabelLUT:
             List of colors (R, G, B) in the LUT.
         """
         if mode is None:
-            return self.Colors
-        dark_colors = list(
-            filter(lambda col: rgb_to_yiq(*col)[0] < 0.5, self.Colors))
-        light_colors = list(
-            filter(lambda col: rgb_to_yiq(*col)[0] >= 0.5, self.Colors))
+            return cls.Colors
+        dark_colors = list(filter(lambda col: rgb_to_yiq(*col)[0] < 0.5, cls.Colors))
+        light_colors = list(filter(lambda col: rgb_to_yiq(*col)[0] >= 0.5, cls.Colors))
         if mode == 'lightbg':
             return dark_colors + light_colors
         if mode == 'darkbg':

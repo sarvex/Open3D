@@ -26,14 +26,10 @@ def _get_examples_dir():
     """Get the path to the examples directory."""
     tools_path = os.path.dirname(os.path.abspath(__file__))
     examples_path = os.path.join(os.path.dirname(tools_path), "examples")
-    if os.path.exists(examples_path):
-        examples_dir = Path(examples_path)
-        return examples_dir
-    else:
+    if not os.path.exists(examples_path):
         examples_path = os.path.join(
             os.path.dirname(os.path.dirname(tools_path)), "examples", "python")
-        examples_dir = Path(examples_path)
-        return examples_dir
+    return Path(examples_path)
 
 
 def _get_all_examples_dict():
@@ -66,7 +62,7 @@ def _get_runnable_examples_dict():
     }
     for cat in categories_to_remove:
         examples_dict.pop(cat)
-    for cat in examples_to_remove.keys():
+    for cat in examples_to_remove:
         for ex in examples_to_remove[cat]:
             examples_dict[cat].remove(ex)
     return examples_dict
@@ -76,16 +72,16 @@ def _get_all_examples():
     all_examples = []
     examples_dict = _get_runnable_examples_dict()
     for category in examples_dict:
-        for example in examples_dict[category]:
-            all_examples.append(f"{category}/{example}")
+        all_examples.extend(
+            f"{category}/{example}" for example in examples_dict[category]
+        )
     return all_examples
 
 
 def _get_example_categories():
     """Get a set of all available category names."""
     examples_dict = _get_runnable_examples_dict()
-    all_categories = [category for category in examples_dict]
-    return all_categories
+    return list(examples_dict)
 
 
 def _get_examples_in_category(category):
@@ -93,16 +89,11 @@ def _get_examples_in_category(category):
     examples_dict = _get_runnable_examples_dict()
     examples_dir = _get_examples_dir()
     category_path = os.path.join(examples_dir, category)
-    example_names = {
-        name: Path(category_path) for name in examples_dict[category]
-    }
-    return example_names
+    return {name: Path(category_path) for name in examples_dict[category]}
 
 
 def _support_choice_with_dot_py(choice):
-    if choice.endswith(".py"):
-        return choice[:-3]
-    return choice
+    return choice[:-3] if choice.endswith(".py") else choice
 
 
 def _example_help_categories():
@@ -122,7 +113,7 @@ def _example(parser, args):
     if args.category_example is None:
         if args.list:
             for category in _get_example_categories():
-                print("examples in " + category + ": ")
+                print(f"examples in {category}: ")
                 for examples_in_category in sorted(
                         _get_examples_in_category(category)):
                     print(f"  {category}/{examples_in_category}")
@@ -139,28 +130,28 @@ def _example(parser, args):
         example = ""
 
     if category not in _get_example_categories():
-        print("Error: invalid category provided: " + category, file=sys.stderr)
+        print(f"Error: invalid category provided: {category}", file=sys.stderr)
         parser.exit(2)
 
     if args.list:
-        if example == "":
-            print("examples in " + category + ": ")
+        if example:
+            print(
+                f"Error: invalid category provided: {args.category_example}",
+                file=sys.stderr,
+            )
+            parser.exit(2)
+
+        else:
+            print(f"examples in {category}: ")
             for examples_in_category in sorted(
                     _get_examples_in_category(category)):
                 print(f"  {category}/{examples_in_category}")
             print("\nTo view all examples, run:")
             print("  open3d example --list\n")
             return 0
-        else:
-            print(
-                "Error: invalid category provided: " + args.category_example,
-                file=sys.stderr,
-            )
-            parser.exit(2)
-
     if args.category_example not in _get_all_examples():
         print(
-            "Error: invalid example name provided: " + args.category_example,
+            f"Error: invalid example name provided: {args.category_example}",
             file=sys.stderr,
         )
         parser.exit(2)
@@ -240,7 +231,7 @@ def main():
         "-V",
         "--version",
         action="version",
-        version="Open3D " + o3d.__version__,
+        version=f"Open3D {o3d.__version__}",
         help="Show program's version number and exit.",
     )
     main_parser.add_argument("-h",
@@ -366,9 +357,8 @@ def main():
     args = main_parser.parse_args()
     if args.command in subparsers.choices.keys():
         return args.func(subparsers.choices[args.command], args)
-    else:
-        main_parser.print_help()
-        return 0
+    main_parser.print_help()
+    return 0
 
 
 if __name__ == "__main__":

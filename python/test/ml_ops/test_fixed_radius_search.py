@@ -38,7 +38,7 @@ def test_fixed_radius_search(dtype, ml, num_points_queries, radius,
                              return_distances, index_dtype):
 
     # skip dtype not supported on GPU
-    if mltest.is_gpu_device_name(ml.device) and not dtype in gpu_dtypes:
+    if mltest.is_gpu_device_name(ml.device) and dtype not in gpu_dtypes:
         return
 
     rng = np.random.RandomState(123)
@@ -167,7 +167,7 @@ def test_fixed_radius_search_batches(dtype, ml, batch_size, radius,
                                      ignore_query_point, return_distances,
                                      index_dtype):
     # skip dtype not supported on GPU
-    if mltest.is_gpu_device_name(ml.device) and not dtype in gpu_dtypes:
+    if mltest.is_gpu_device_name(ml.device) and dtype not in gpu_dtypes:
         return
 
     rng = np.random.RandomState(123)
@@ -269,7 +269,7 @@ def test_fixed_radius_search_raggedtensor(dtype, ml, batch_size, radius,
     if ml.module.__name__ != 'tensorflow':
         return
     # skip dtype not supported on GPU
-    if mltest.is_gpu_device_name(ml.device) and not dtype in gpu_dtypes:
+    if mltest.is_gpu_device_name(ml.device) and dtype not in gpu_dtypes:
         return
 
     rng = np.random.RandomState(123)

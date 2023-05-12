@@ -199,7 +199,7 @@ class ExampleWindow:
         collapse.add_child(combo)
 
         # Add a simple image
-        logo = gui.ImageWidget(basedir + "/icon-32.png")
+        logo = gui.ImageWidget(f"{basedir}/icon-32.png")
         collapse.add_child(logo)
 
         # Add a list of items
@@ -230,7 +230,7 @@ class ExampleWindow:
         intedit = gui.NumberEdit(gui.NumberEdit.INT)
         intedit.int_value = 0
         intedit.set_limits(1, 19)  # value coerced to 1
-        intedit.int_value = intedit.int_value + 2  # value should be 3
+        intedit.int_value += 2
         doubleedit = gui.NumberEdit(gui.NumberEdit.DOUBLE)
         numlayout = gui.Horiz()
         numlayout.add_child(gui.Label("int"))
@@ -242,8 +242,7 @@ class ExampleWindow:
 
         # Create a progress bar. It ranges from 0.0 to 1.0.
         self._progress = gui.ProgressBar()
-        self._progress.value = 0.25  # 25% complete
-        self._progress.value = self._progress.value + 0.08  # 0.25 + 0.08 = 33%
+        self._progress.value = 0.25 + 0.08
         prog_layout = gui.Horiz(em)
         prog_layout.add_child(gui.Label("Progress..."))
         prog_layout.add_child(self._progress)
@@ -340,11 +339,7 @@ class ExampleWindow:
         self.window.close_dialog()
 
     def _on_cb(self, is_checked):
-        if is_checked:
-            text = "Sorry, effects are unimplemented"
-        else:
-            text = "Good choice"
-
+        text = "Sorry, effects are unimplemented" if is_checked else "Good choice"
         self.show_message_dialog("There might be a problem...", text)
 
     # This function is essentially the same as window.show_message_box(),

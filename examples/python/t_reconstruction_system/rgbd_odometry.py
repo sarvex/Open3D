@@ -16,13 +16,13 @@ from common import load_rgbd_file_names, load_depth_file_names, save_poses, load
 def read_legacy_rgbd_image(color_file, depth_file, convert_rgb_to_intensity):
     color = o3d.io.read_image(color_file)
     depth = o3d.io.read_image(depth_file)
-    rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
+    return o3d.geometry.RGBDImage.create_from_color_and_depth(
         color,
         depth,
         depth_scale=1000.0,
         depth_trunc=3.0,
-        convert_rgb_to_intensity=convert_rgb_to_intensity)
-    return rgbd_image
+        convert_rgb_to_intensity=convert_rgb_to_intensity,
+    )
 
 
 def rgbd_loop_closure(depth_list, color_list, intrinsic, config):

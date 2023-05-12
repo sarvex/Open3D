@@ -43,7 +43,7 @@ def test_training_graph_mode(ml):
     if ml.module.__name__ != 'tensorflow':
         return
     # the problem is specific to CUDA
-    if not 'GPU' in ml.device:
+    if 'GPU' not in ml.device:
         return
 
     tf = ml.module

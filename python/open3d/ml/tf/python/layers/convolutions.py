@@ -168,23 +168,21 @@ class ContinuousConv(tf.keras.layers.Layer):
         self.dense_kernel_regularizer = regularizers.get(
             dense_kernel_regularizer)
 
-        if offset is None:
-            self.offset = tf.zeros(shape=(3,))
-        else:
-            self.offset = offset
-
+        self.offset = tf.zeros(shape=(3,)) if offset is None else offset
         self.window_function = window_function
 
         self.fixed_radius_search = FixedRadiusSearch(
             metric=self.radius_search_metric,
             ignore_query_point=self.radius_search_ignore_query_points,
-            return_distances=not self.window_function is None)
+            return_distances=self.window_function is not None,
+        )
 
         self.radius_search = RadiusSearch(
             metric=self.radius_search_metric,
             ignore_query_point=self.radius_search_ignore_query_points,
-            return_distances=not self.window_function is None,
-            normalize_distances=not self.window_function is None)
+            return_distances=self.window_function is not None,
+            normalize_distances=self.window_function is not None,
+        )
 
         self.use_dense_layer_for_center = use_dense_layer_for_center
         if self.use_dense_layer_for_center:
@@ -280,9 +278,10 @@ class ContinuousConv(tf.keras.layers.Layer):
 
         extents = tf.convert_to_tensor(extents)
 
-        return_distances = not self.window_function is None
-
-        if not user_neighbors_index is None and not user_neighbors_row_splits is None:
+        if (
+            user_neighbors_index is not None
+            and user_neighbors_row_splits is not None
+        ):
 
             if user_neighbors_importance is None:
                 neighbors_importance = tf.ones((0,), dtype=tf.float32)
@@ -300,11 +299,13 @@ class ContinuousConv(tf.keras.layers.Layer):
                     queries=out_positions,
                     radius=radius,
                     hash_table=fixed_radius_search_hash_table)
+                return_distances = self.window_function is not None
+
                 if return_distances:
                     if self.radius_search_metric == 'L2':
                         neighbors_distance_normalized = self.nns.neighbors_distance / (
                             radius * radius)
-                    else:  # L1
+                    else:
                         neighbors_distance_normalized = self.nns.neighbors_distance / radius
 
             elif extents.shape.rank == 1:
@@ -526,12 +527,13 @@ class SparseConv(tf.keras.layers.Layer):
         if inp_importance is None:
             inp_importance = tf.ones((0,), dtype=tf.float32)
 
-        if isinstance(inp_features, tf.RaggedTensor):
-            if not (isinstance(inp_positions, tf.RaggedTensor) and
-                    isinstance(out_positions, tf.RaggedTensor)):
-                raise Exception(
-                    "All of inp_positions, inp_features and out_positions must be tf.Tensor, or tf.RaggedTensor"
-                )
+        if isinstance(inp_features, tf.RaggedTensor) and not (
+            isinstance(inp_positions, tf.RaggedTensor)
+            and isinstance(out_positions, tf.RaggedTensor)
+        ):
+            raise Exception(
+                "All of inp_positions, inp_features and out_positions must be tf.Tensor, or tf.RaggedTensor"
+            )
 
         hash_table_size_factor = 1 / 64
         self.nns = self.fixed_radius_search(
@@ -744,12 +746,13 @@ class SparseConvTranspose(tf.keras.layers.Layer):
 
         empty_vec = tf.ones((0,), dtype=tf.float32)
 
-        if isinstance(inp_features, tf.RaggedTensor):
-            if not (isinstance(inp_positions, tf.RaggedTensor) and
-                    isinstance(out_positions, tf.RaggedTensor)):
-                raise Exception(
-                    "All of inp_positions, inp_features and out_positions must be tf.Tensor, or tf.RaggedTensor"
-                )
+        if isinstance(inp_features, tf.RaggedTensor) and not (
+            isinstance(inp_positions, tf.RaggedTensor)
+            and isinstance(out_positions, tf.RaggedTensor)
+        ):
+            raise Exception(
+                "All of inp_positions, inp_features and out_positions must be tf.Tensor, or tf.RaggedTensor"
+            )
 
         hash_table_size_factor = 1 / 64
         self.nns_inp = self.fixed_radius_search(

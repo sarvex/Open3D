@@ -30,12 +30,13 @@ def get_point_object(geometry, point_sample_factor=1):
                                    replace=False)
         points = points[indices]
         colors = colors[indices]
-    scatter_3d = go.Scatter3d(x=points[:, 0],
-                              y=points[:, 1],
-                              z=points[:, 2],
-                              mode='markers',
-                              marker=dict(size=1, color=colors))
-    return scatter_3d
+    return go.Scatter3d(
+        x=points[:, 0],
+        y=points[:, 1],
+        z=points[:, 2],
+        mode='markers',
+        marker=dict(size=1, color=colors),
+    )
 
 
 def get_mesh_object(geometry,):
@@ -43,24 +44,27 @@ def get_mesh_object(geometry,):
     triangles = np.asarray(geometry.triangles)
     vertices = np.asarray(geometry.vertices)
 
-    mesh_3d = go.Mesh3d(x=vertices[:, 0],
-                        y=vertices[:, 1],
-                        z=vertices[:, 2],
-                        i=triangles[:, 0],
-                        j=triangles[:, 1],
-                        k=triangles[:, 2],
-                        flatshading=True,
-                        colorscale=pl_mygrey,
-                        intensity=vertices[:, 0],
-                        lighting=dict(ambient=0.18,
-                                      diffuse=1,
-                                      fresnel=0.1,
-                                      specular=1,
-                                      roughness=0.05,
-                                      facenormalsepsilon=1e-15,
-                                      vertexnormalsepsilon=1e-15),
-                        lightposition=dict(x=100, y=200, z=0))
-    return mesh_3d
+    return go.Mesh3d(
+        x=vertices[:, 0],
+        y=vertices[:, 1],
+        z=vertices[:, 2],
+        i=triangles[:, 0],
+        j=triangles[:, 1],
+        k=triangles[:, 2],
+        flatshading=True,
+        colorscale=pl_mygrey,
+        intensity=vertices[:, 0],
+        lighting=dict(
+            ambient=0.18,
+            diffuse=1,
+            fresnel=0.1,
+            specular=1,
+            roughness=0.05,
+            facenormalsepsilon=1e-15,
+            vertexnormalsepsilon=1e-15,
+        ),
+        lightposition=dict(x=100, y=200, z=0),
+    )
 
 
 def get_wireframe_object(geometry):
@@ -74,12 +78,9 @@ def get_wireframe_object(geometry):
         x.extend([point[k % 3][0] for k in range(4)] + [None])
         y.extend([point[k % 3][1] for k in range(4)] + [None])
         z.extend([point[k % 3][2] for k in range(4)] + [None])
-    wireframe = go.Scatter3d(x=x,
-                             y=y,
-                             z=z,
-                             mode='lines',
-                             line=dict(color='rgb(70,70,70)', width=1))
-    return wireframe
+    return go.Scatter3d(
+        x=x, y=y, z=z, mode='lines', line=dict(color='rgb(70,70,70)', width=1)
+    )
 
 
 def get_lineset_object(geometry):
@@ -91,8 +92,7 @@ def get_lineset_object(geometry):
         x.extend([point[k % 2][0] for k in range(2)] + [None])
         y.extend([point[k % 2][1] for k in range(2)] + [None])
         z.extend([point[k % 2][2] for k in range(2)] + [None])
-    line_3d = go.Scatter3d(x=x, y=y, z=z, mode='lines')
-    return line_3d
+    return go.Scatter3d(x=x, y=y, z=z, mode='lines')
 
 
 def get_graph_objects(geometry_list,
@@ -172,20 +172,21 @@ def get_plotly_fig(geometry_list,
         plotly_eye = None
 
     camera = dict(up=plotly_up, center=plotly_center, eye=plotly_eye)
-    fig = go.Figure(data=graph_objects,
-                    layout=dict(
-                        showlegend=False,
-                        width=width,
-                        height=height,
-                        margin=dict(
-                            l=0,
-                            r=0,
-                            b=0,
-                            t=0,
-                        ),
-                        scene_camera=camera,
-                    ))
-    return fig
+    return go.Figure(
+        data=graph_objects,
+        layout=dict(
+            showlegend=False,
+            width=width,
+            height=height,
+            margin=dict(
+                l=0,
+                r=0,
+                b=0,
+                t=0,
+            ),
+            scene_camera=camera,
+        ),
+    )
 
 
 def draw_plotly(geometry_list,

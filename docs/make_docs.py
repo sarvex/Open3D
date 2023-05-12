@@ -30,9 +30,9 @@ import multiprocessing
 def _create_or_clear_dir(dir_path):
     if os.path.exists(dir_path):
         shutil.rmtree(dir_path)
-        print("Removed directory %s" % dir_path)
+        print(f"Removed directory {dir_path}")
     os.makedirs(dir_path)
-    print("Created directory %s" % dir_path)
+    print(f"Created directory {dir_path}")
 
 
 def _update_file(src, dst):
@@ -41,9 +41,9 @@ def _update_file(src, dst):
         src_stat = os.stat(src)
         dst_stat = os.stat(dst)
         if src_stat.st_mtime - dst_stat.st_mtime <= 0:
-            print("Copy skipped: {}".format(dst))
+            print(f"Copy skipped: {dst}")
             return
-    print("Copy: {}\n   -> {}".format(src, dst))
+    print(f"Copy: {src}\n   -> {dst}")
     shutil.copy2(src, dst)
 
 
@@ -66,8 +66,7 @@ class PyAPIDocsBuilder:
         self.output_dir = output_dir
         self.input_dir = input_dir
         self.module_names = PyAPIDocsBuilder._get_documented_module_names()
-        print("Generating *.rst Python API docs in directory: %s" %
-              self.output_dir)
+        print(f"Generating *.rst Python API docs in directory: {self.output_dir}")
 
     def generate_rst(self):
         _create_or_clear_dir(self.output_dir)
@@ -77,8 +76,7 @@ class PyAPIDocsBuilder:
                 module = self._try_import_module(module_name)
                 self._generate_module_class_function_docs(module_name, module)
             except:
-                print("[Warning] Module {} cannot be imported.".format(
-                    module_name))
+                print(f"[Warning] Module {module_name} cannot be imported.")
 
     @staticmethod
     def _get_documented_module_names():
@@ -87,9 +85,8 @@ class PyAPIDocsBuilder:
         with open("documented_modules.txt", "r") as f:
             for line in f:
                 print(line, end="")
-                m = re.match("^(open3d\..*)\s*$", line)
-                if m:
-                    module_names.append(m.group(1))
+                if m := re.match("^(open3d\..*)\s*$", line):
+                    module_names.append(m[1])
         print("Documented modules:")
         for module_name in module_names:
             print("-", module_name)
@@ -104,9 +101,7 @@ class PyAPIDocsBuilder:
             import open3d.ml.torch
 
         try:
-            # Try to import directly. This will work for pure python submodules
-            module = importlib.import_module(full_module_name)
-            return module
+            return importlib.import_module(full_module_name)
         except ImportError:
             # Traverse the module hierarchy of the root module.
             # This code path is necessary for modules for which we manually
@@ -120,10 +115,10 @@ class PyAPIDocsBuilder:
     def _generate_function_doc(self, full_module_name, function_name,
                                output_path):
         out_string = ""
-        out_string += "%s.%s" % (full_module_name, function_name)
+        out_string += f"{full_module_name}.{function_name}"
         out_string += "\n" + "-" * len(out_string)
-        out_string += "\n\n" + ".. currentmodule:: %s" % full_module_name
-        out_string += "\n\n" + ".. autofunction:: %s" % function_name
+        out_string += "\n\n" + f".. currentmodule:: {full_module_name}"
+        out_string += "\n\n" + f".. autofunction:: {function_name}"
         out_string += "\n"
 
         with open(output_path, "w") as f:
@@ -131,10 +126,10 @@ class PyAPIDocsBuilder:
 
     def _generate_class_doc(self, full_module_name, class_name, output_path):
         out_string = ""
-        out_string += "%s.%s" % (full_module_name, class_name)
+        out_string += f"{full_module_name}.{class_name}"
         out_string += "\n" + "-" * len(out_string)
-        out_string += "\n\n" + ".. currentmodule:: %s" % full_module_name
-        out_string += "\n\n" + ".. autoclass:: %s" % class_name
+        out_string += "\n\n" + f".. currentmodule:: {full_module_name}"
+        out_string += "\n\n" + f".. autoclass:: {class_name}"
         out_string += "\n    :members:"
         out_string += "\n    :undoc-members:"
         if not (full_module_name.startswith("open3d.ml.tf") or
@@ -153,14 +148,14 @@ class PyAPIDocsBuilder:
         out_string = ""
         out_string += full_module_name
         out_string += "\n" + "-" * len(out_string)
-        out_string += "\n\n" + ".. currentmodule:: %s" % full_module_name
+        out_string += "\n\n" + f".. currentmodule:: {full_module_name}"
 
         if len(class_names) > 0:
             out_string += "\n\n**Classes**"
             out_string += "\n\n.. autosummary::"
             out_string += "\n"
             for class_name in class_names:
-                out_string += "\n    " + "%s" % (class_name,)
+                out_string += "\n    " + f"{class_name}"
             out_string += "\n"
 
         if len(function_names) > 0:
@@ -168,7 +163,7 @@ class PyAPIDocsBuilder:
             out_string += "\n\n.. autosummary::"
             out_string += "\n"
             for function_name in function_names:
-                out_string += "\n    " + "%s" % (function_name,)
+                out_string += "\n    " + f"{function_name}"
             out_string += "\n"
 
         if len(sub_module_names) > 0:
@@ -176,7 +171,7 @@ class PyAPIDocsBuilder:
             out_string += "\n\n.. autosummary::"
             out_string += "\n"
             for sub_module_name in sub_module_names:
-                out_string += "\n    " + "%s" % (sub_module_name,)
+                out_string += "\n    " + f"{sub_module_name}"
             out_string += "\n"
 
         obj_names = class_names + function_names + sub_module_names
@@ -196,7 +191,7 @@ class PyAPIDocsBuilder:
             f.write(out_string)
 
     def _generate_module_class_function_docs(self, full_module_name, module):
-        print("Generating docs for submodule: %s" % full_module_name)
+        print(f"Generating docs for submodule: {full_module_name}")
 
         # Class docs
         class_names = [
@@ -205,7 +200,7 @@ class PyAPIDocsBuilder:
             if inspect.isclass(obj[1]) and not obj[0].startswith('_')
         ]
         for class_name in class_names:
-            file_name = "%s.%s.rst" % (full_module_name, class_name)
+            file_name = f"{full_module_name}.{class_name}.rst"
             output_path = os.path.join(self.output_dir, file_name)
             input_path = os.path.join(self.input_dir, file_name)
             if os.path.isfile(input_path):
@@ -220,7 +215,7 @@ class PyAPIDocsBuilder:
             if inspect.isroutine(obj[1]) and not obj[0].startswith('_')
         ]
         for function_name in function_names:
-            file_name = "%s.%s.rst" % (full_module_name, function_name)
+            file_name = f"{full_module_name}.{function_name}.rst"
             output_path = os.path.join(self.output_dir, file_name)
             input_path = os.path.join(self.input_dir, file_name)
             if os.path.isfile(input_path):
@@ -237,14 +232,14 @@ class PyAPIDocsBuilder:
             if inspect.ismodule(obj[1]) and not obj[0].startswith('_')
         ]
         documented_sub_module_names = [
-            sub_module_name for sub_module_name in sub_module_names if "%s.%s" %
-            (full_module_name, sub_module_name) in self.module_names
+            sub_module_name
+            for sub_module_name in sub_module_names
+            if f"{full_module_name}.{sub_module_name}" in self.module_names
         ]
 
         # Path
-        sub_module_doc_path = os.path.join(self.output_dir,
-                                           full_module_name + ".rst")
-        input_path = os.path.join(self.input_dir, full_module_name + ".rst")
+        sub_module_doc_path = os.path.join(self.output_dir, f"{full_module_name}.rst")
+        input_path = os.path.join(self.input_dir, f"{full_module_name}.rst")
         if os.path.isfile(input_path):
             shutil.copyfile(input_path, sub_module_doc_path)
             return
@@ -279,8 +274,7 @@ class PyExampleDocsBuilder:
         sys.path.append(os.path.join(pwd, "..", "python", "tools"))
         from cli import _get_all_examples_dict
         self.get_all_examples_dict = _get_all_examples_dict
-        print("Generating *.rst Python example docs in directory: %s" %
-              self.output_dir)
+        print(f"Generating *.rst Python example docs in directory: {self.output_dir}")
 
     def _get_examples_dict(self):
         examples_dict = self.get_all_examples_dict()
@@ -406,9 +400,9 @@ class SphinxDocsBuilder:
                 "-b",
                 "html",
                 "-D",
-                "version=" + release_version,
+                f"version={release_version}",
                 "-D",
-                "release=" + release_version,
+                f"release={release_version}",
                 ".",
                 build_dir,
             ]
@@ -427,8 +421,8 @@ class SphinxDocsBuilder:
         sphinx_env[
             "skip_notebooks"] = "true" if self.skip_notebooks else "false"
 
-        print('Calling: "%s"' % " ".join(cmd))
-        print('Env: "%s"' % sphinx_env)
+        print(f'Calling: "{" ".join(cmd)}"')
+        print(f'Env: "{sphinx_env}"')
         subprocess.check_call(cmd,
                               env=sphinx_env,
                               stdout=sys.stdout,
@@ -445,7 +439,7 @@ class DoxygenDocsBuilder:
         _create_or_clear_dir(doxygen_temp_dir)
 
         cmd = ["doxygen", "Doxyfile"]
-        print('Calling: "%s"' % " ".join(cmd))
+        print(f'Calling: "{" ".join(cmd)}"')
         subprocess.check_call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         shutil.copytree(
             os.path.join("doxygen", "html"),
@@ -462,7 +456,7 @@ class JupyterDocsBuilder:
         self.clean_notebooks = clean_notebooks
         self.execute_notebooks = execute_notebooks
         self.current_file_dir = current_file_dir
-        print("Notebook execution mode: {}".format(self.execute_notebooks))
+        print(f"Notebook execution mode: {self.execute_notebooks}")
 
     def overwrite_tutorial_file(self, url, output_file, output_file_path):
         with urllib.request.urlopen(
@@ -505,7 +499,7 @@ class JupyterDocsBuilder:
 
             if self.clean_notebooks:
                 for nb_out_path in out_dir.glob("*.ipynb"):
-                    print("Delete: {}".format(nb_out_path))
+                    print(f"Delete: {nb_out_path}")
                     nb_out_path.unlink()
 
             for nb_in_path in in_dir.glob("*.ipynb"):
@@ -517,18 +511,16 @@ class JupyterDocsBuilder:
             if (in_dir / "images").is_dir():
                 if (out_dir / "images").exists():
                     shutil.rmtree(out_dir / "images")
-                print("Copy: {}\n   -> {}".format(in_dir / "images",
-                                                  out_dir / "images"))
+                print(f'Copy: {in_dir / "images"}\n   -> {out_dir / "images"}')
                 shutil.copytree(in_dir / "images", out_dir / "images")
 
         # Execute Jupyter notebooks
         for nb_path in nb_paths:
             if nb_path.name in nb_direct_copy:
-                print("[Processing notebook {}, directly copied]".format(
-                    nb_path.name))
+                print(f"[Processing notebook {nb_path.name}, directly copied]")
                 continue
 
-            print("[Processing notebook {}]".format(nb_path.name))
+            print(f"[Processing notebook {nb_path.name}]")
             with open(nb_path, encoding="utf-8") as f:
                 nb = nbformat.read(f, as_version=4)
 
@@ -540,16 +532,14 @@ class JupyterDocsBuilder:
                 if c.cell_type == "code")
             execute = (self.execute_notebooks == "auto" and has_code and
                        not has_output) or self.execute_notebooks == "always"
-            print("has_code: {}, has_output: {}, execute: {}".format(
-                has_code, has_output, execute))
+            print(f"has_code: {has_code}, has_output: {has_output}, execute: {execute}")
 
             if execute:
                 ep = nbconvert.preprocessors.ExecutePreprocessor(timeout=6000)
                 try:
                     ep.preprocess(nb, {"metadata": {"path": nb_path.parent}})
                 except nbconvert.preprocessors.execute.CellExecutionError:
-                    print("Execution of {} failed, this will cause CI to fail.".
-                          format(nb_path.name))
+                    print(f"Execution of {nb_path.name} failed, this will cause CI to fail.")
                     if "GITHUB_ACTIONS" in os.environ:
                         raise
 
@@ -647,23 +637,23 @@ if __name__ == "__main__":
     cpp_build_dir = os.path.join(pwd, "_static", "C++", "build")
     if os.path.exists(cpp_build_dir):
         shutil.rmtree(cpp_build_dir)
-        print("Removed directory %s" % cpp_build_dir)
+        print(f"Removed directory {cpp_build_dir}")
 
     # Python API reST docs
-    if not args.py_api_rst == "never":
+    if args.py_api_rst != "never":
         print("Building Python API reST")
         pd = PyAPIDocsBuilder()
         pd.generate_rst()
 
     # Python example reST docs
     py_example_input_dir = os.path.join(pwd, "..", "examples", "python")
-    if not args.py_example_rst == "never":
+    if args.py_example_rst != "never":
         print("Building Python example reST")
         pe = PyExampleDocsBuilder(input_dir=py_example_input_dir, pwd=pwd)
         pe.generate_rst()
 
     # Jupyter docs (needs execution)
-    if not args.execute_notebooks == "never":
+    if args.execute_notebooks != "never":
         print("Building Jupyter docs")
         jdb = JupyterDocsBuilder(pwd, args.clean_notebooks,
                                  args.execute_notebooks)

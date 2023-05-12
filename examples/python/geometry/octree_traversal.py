@@ -14,23 +14,18 @@ def f_traverse(node, node_info):
 
     if isinstance(node, o3d.geometry.OctreeInternalNode):
         if isinstance(node, o3d.geometry.OctreeInternalPointNode):
-            n = 0
-            for child in node.children:
-                if child is not None:
-                    n += 1
+            n = sum(1 for child in node.children if child is not None)
             print(
-                "{}{}: Internal node at depth {} has {} children and {} points ({})"
-                .format('    ' * node_info.depth,
-                        node_info.child_index, node_info.depth, n,
-                        len(node.indices), node_info.origin))
+                f"{'    ' * node_info.depth}{node_info.child_index}: Internal node at depth {node_info.depth} has {n} children and {len(node.indices)} points ({node_info.origin})"
+            )
 
             # We only want to process nodes / spatial regions with enough points.
             early_stop = len(node.indices) < 250
     elif isinstance(node, o3d.geometry.OctreeLeafNode):
         if isinstance(node, o3d.geometry.OctreePointColorLeafNode):
-            print("{}{}: Leaf node at depth {} has {} points with origin {}".
-                  format('    ' * node_info.depth, node_info.child_index,
-                         node_info.depth, len(node.indices), node_info.origin))
+            print(
+                f"{'    ' * node_info.depth}{node_info.child_index}: Leaf node at depth {node_info.depth} has {len(node.indices)} points with origin {node_info.origin}"
+            )
     else:
         raise NotImplementedError('Node type not recognized!')
 

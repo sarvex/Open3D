@@ -101,7 +101,7 @@ if __name__ == '__main__':
     if not os.path.exists(config.path_npz):
         volume, poses = slam(depth_file_names, color_file_names, intrinsic,
                              config)
-        print('Saving to {}...'.format(config.path_npz))
+        print(f'Saving to {config.path_npz}...')
         volume.save(config.path_npz)
         save_poses('output.log', poses)
         print('Saving finished')
